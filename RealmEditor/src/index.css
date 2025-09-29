@@ -1,0 +1,28 @@
+/* src/index.css */
+
+/* Use a modern CSS reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+/* This enables smooth scrolling for the whole page */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Poppins', sans-serif;
+}
+
+#root {
+  isolation: isolate;
+  height: 100%;
+}

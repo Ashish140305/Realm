@@ -1,0 +1,25 @@
+/* src/styles/IconSidebar.css */
+.icon-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #333333;
+  padding: 0.5rem 0;
+  width: 50px;
+}
+.icon-button {
+  background: none;
+  border: none;
+  color: #8f8f8f;
+  font-size: 1.5rem;
+  padding: 0.8rem 0;
+  cursor: pointer;
+  width: 100%;
+  transition: color 0.2s ease;
+}
+.icon-button:hover {
+  color: #fff;
+}
+.icon-button.active {
+  color: #fff;
+}

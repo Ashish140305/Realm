@@ -1,0 +1,91 @@
+.features-section {
+  padding: 6rem 5%;
+  background-color: #f9fafb;
+  text-align: center;
+}
+
+.section-header {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.section-header.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.features-section h2 { font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 1rem; }
+.features-section .highlight { color: #8b5cf6; }
+.section-subtitle { font-size: 1.1rem; color: #6b7280; max-width: 600px; margin: 0 auto 4rem auto; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+  position: relative; /* Required for the pseudo-element */
+  z-index: 1;
+}
+
+/* --- New Animated Gradient Border --- */
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  background: linear-gradient(to bottom right, #8b5cf6, #ec4899);
+  border-radius: 14px;
+  z-index: -1;
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.4s ease-in-out;
+}
+
+.feature-card:hover::before {
+  opacity: 0.6; /* Revealed on hover */
+}
+/* ---------------------------------- */
+
+.feature-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  color: #8b5cf6;
+  margin-bottom: 1rem;
+  background-color: #ede9fe;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.15) rotate(10deg);
+}
+
+.feature-card h3 { font-size: 1.25rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem; }
+.feature-card p { color: #4b5563; }

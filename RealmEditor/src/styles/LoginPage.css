@@ -1,0 +1,105 @@
+/* src/styles/LoginPage.css */
+
+.login-page-container {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+}
+
+.login-content-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.login-hero-text {
+  flex-basis: 50%;
+  color: white;
+  padding-right: 5%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.login-hero-text h1 {
+  font-size: 6rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.1;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(192, 132, 252, 0.4);
+  animation: pulse-glow 4s infinite alternate ease-in-out;
+}
+
+@keyframes pulse-glow {
+  from { text-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 30px rgba(192, 132, 252, 0.4); }
+  to { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5), 0 0 45px rgba(192, 132, 252, 0.6); }
+}
+
+.login-hero-text p {
+  font-size: 1.2rem;
+  font-weight: 300;
+  opacity: 0.8;
+  margin-top: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.login-form-panel {
+  flex-basis: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 5%;
+}
+
+/* --- Adjusted Frosted Glass Effect --- */
+.login-form {
+  /* This value is now higher, making the form less transparent */
+  background-color: rgba(255, 255, 255, 0.65); 
+  
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  /* A more solid border to match */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+
+  padding: 2.5rem;
+  border-radius: 16px;
+  width: 380px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.login-form h2 { margin-top: 0; font-size: 1.8rem; text-align: center; margin-bottom: 1.5rem; color: #111827; }
+.input-group { margin-bottom: 1rem; position: relative; }
+.input-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; }
+.input-group input { width: 100%; padding: 0.8rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+.input-group input:focus { outline: none; border-color: #818cf8; box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3); }
+.password-toggle-btn { position: absolute; top: 38px; right: 12px; background: none; border: none; cursor: pointer; color: #6b7280; font-size: 1.2rem; }
+.continue-btn { width: 100%; padding: 0.8rem; background-color: #111827; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 1rem; }
+.create-account-link { display: block; text-align: center; color: #4b5563; text-decoration: none; margin-top: 1rem; }
+.divider { display: flex; align-items: center; text-align: center; color: #9ca3af; margin: 1rem 0; }
+.divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #e5e7eb; }
+.divider span { padding: 0 1rem; font-size: 0.9rem; font-weight: 500; }
+.social-login-buttons { display: flex; flex-direction: column; gap: 0.75rem; }
+.social-btn { display: flex; align-items: center; justify-content: center; gap: 0.75rem; width: 100%; padding: 0.7rem; font-size: 0.95rem; font-weight: 500; border-radius: 8px; background-color: #fff; border: 1px solid #d1d5db; cursor: pointer; transition: background-color 0.2s ease; }
+.social-btn:hover { background-color: #f9fafb; }
+.social-btn svg { font-size: 1.2rem; }
+/* Add this to the end of src/styles/LoginPage.css */
+
+.form-error {
+  text-align: center;
+  margin-bottom: 1rem;
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 0.5rem;
+  border-radius: 6px;
+}

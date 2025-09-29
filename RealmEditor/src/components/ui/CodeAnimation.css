@@ -1,0 +1,40 @@
+/* src/components/ui/CodeAnimation.css */
+.terminal-window {
+  background-color: #1e293b; /* Dark slate */
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  min-width: 500px;
+  max-width: 600px;
+}
+
+.terminal-header {
+  background-color: #334155;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.dot.red { background-color: #ef4444; }
+.dot.yellow { background-color: #f59e0b; }
+.dot.green { background-color: #22c55e; }
+
+.terminal-body {
+  padding: 20px;
+  font-family: 'Courier New', Courier, monospace;
+  color: #e2e8f0;
+  min-height: 200px;
+  font-size: 0.9rem;
+}
+
+.terminal-body pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

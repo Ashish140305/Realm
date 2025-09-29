@@ -1,0 +1,22 @@
+/* src/styles/EditorPage.css */
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+}
+.main-workspace {
+  display: flex;
+  height: 100%;
+}
+.resize-handle {
+  background-color: #333;
+  width: 5px !important;
+  cursor: col-resize;
+}
+.resize-handle[data-panel-group-direction="vertical"] {
+  height: 5px !important;
+  width: 100% !important;
+  cursor: row-resize;
+}

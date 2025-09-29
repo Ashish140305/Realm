@@ -1,0 +1,32 @@
+/* src/styles/SidePanel.css */
+.side-panel {
+  background-color: #252526;
+  height: 100%;
+  padding: 0.5rem 0;
+}
+.panel-header {
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 0 1rem;
+  margin-bottom: 0.5rem;
+  color: #ccc;
+}
+.folder {
+  padding-left: 1rem;
+  font-weight: bold;
+}
+.file {
+  padding-left: 2rem;
+  color: #ccc;
+}
+/* Add this to the bottom of src/styles/SidePanel.css */
+.search-input {
+  width: calc(100% - 2rem);
+  margin: 0.5rem 1rem;
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 6px 8px;
+  border-radius: 4px;
+}

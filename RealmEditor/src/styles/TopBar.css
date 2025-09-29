@@ -1,0 +1,35 @@
+/* src/styles/TopBar.css */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #3c3c3c;
+  padding: 0 1rem;
+  height: 40px;
+  flex-shrink: 0;
+}
+.menu-items {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+}
+.search-bar input {
+  background-color: #252526;
+  border: 1px solid #444;
+  border-radius: 5px;
+  color: #ccc;
+  padding: 4px 8px;
+  width: 300px;
+}
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.action-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 1.2rem;
+  cursor: pointer;
+}

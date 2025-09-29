@@ -1,0 +1,63 @@
+/* src/components/landing/FaqSection.css */
+.faq-section { padding: 6rem 5%; background-color: #f9fafb; }
+
+/* Animation for the header */
+.faq-section .section-header { 
+  text-align: center; 
+  margin-bottom: 2rem; 
+  opacity: 0; 
+  transform: translateY(20px); 
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
+}
+.faq-section .section-header.is-visible { 
+  opacity: 1; 
+  transform: translateY(0); 
+}
+
+.faq-section h2 { font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 1rem; }
+.faq-section .highlight { color: #4338ca; }
+.faq-section .section-subtitle { font-size: 1.1rem; color: #6b7280; max-width: 600px; margin: 0 auto; }
+
+/* Animation for the control buttons */
+.faq-controls { 
+  max-width: 800px; 
+  margin: 0 auto 2rem auto; 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: 1rem; 
+  opacity: 0; 
+  transform: translateY(20px); 
+  transition: opacity 0.6s 0.2s ease-out, transform 0.6s 0.2s ease-out; 
+}
+.faq-controls.is-visible { 
+  opacity: 1; 
+  transform: translateY(0); 
+}
+.faq-controls button { background: none; border: none; color: #4338ca; font-weight: 500; cursor: pointer; padding: 0.5rem; }
+
+.faq-accordion { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
+
+/* Animation for each FAQ item card */
+.faq-item { 
+  background-color: #fff; 
+  border-radius: 12px; 
+  border: 1px solid #e5e7eb; 
+  padding: 1.5rem; 
+  opacity: 0; 
+  transform: translateY(30px); 
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out; 
+}
+.faq-item.is-visible { 
+  opacity: 1; 
+  transform: translateY(0); 
+}
+
+.faq-question { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.faq-question h3 { font-size: 1.1rem; font-weight: 600; color: #1f2937; padding-right: 1rem; }
+.faq-item:hover .faq-question h3 { color: #4338ca; }
+.faq-icon { font-size: 1.5rem; color: #6366f1; transition: transform 0.3s ease; flex-shrink: 0; }
+.faq-icon.is-open { transform: rotate(45deg); }
+.faq-answer { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s ease-in-out; }
+.faq-answer.is-open { grid-template-rows: 1fr; }
+.faq-answer > div { overflow: hidden; }
+.faq-answer p { color: #4b5563; line-height: 1.6; padding-top: 1rem; }

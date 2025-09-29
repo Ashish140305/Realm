@@ -1,0 +1,27 @@
+/* src/styles/TerminalPanel.css */
+.terminal-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #202124;
+}
+.terminal-tabs {
+  display: flex;
+  background-color: #333;
+  height: 35px;
+  flex-shrink: 0;
+}
+.terminal-tabs .tab {
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.terminal-tabs .tab.active {
+  background-color: #202124;
+}
+.terminal-wrapper {
+  flex-grow: 1;
+  padding: 0.5rem;
+}
