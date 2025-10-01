@@ -1,6 +1,7 @@
 // src/components/landing/TestimonialsSection.jsx
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
+import { Tilt } from 'react-tilt';
 import '../../styles/TestimonialsSection.css';
 
 const testimonials = [
@@ -31,27 +32,28 @@ export default function TestimonialsSection() {
   });
 
   return (
-    <section ref={ref} className="testimonials-section">
+    <section ref={ref} id="testimonials" className="testimonials-section">
       <div className={`section-header ${inView ? 'is-visible' : ''}`}>
         <h2>Trusted by <span className="highlight">Developers</span> Worldwide</h2>
         <p className="section-subtitle">Don't just take our word for it. Here's what people are saying about Realm.</p>
       </div>
       <div className="testimonials-grid">
         {testimonials.map((testimonial, index) => (
-          <div 
-            key={index}
-            className={`testimonial-card ${inView ? 'is-visible' : ''}`}
-            style={{ transitionDelay: `${index * 150}ms` }}
-          >
-            <p className="testimonial-quote">"{testimonial.quote}"</p>
-            <div className="testimonial-author">
-              <img src={testimonial.avatar} alt={testimonial.author} />
-              <div>
-                <h4>{testimonial.author}</h4>
-                <span>{testimonial.title}</span>
+          <Tilt key={index} options={{ max: 15, scale: 1.02, speed: 400 }}>
+            <div
+              className={`testimonial-card ${inView ? 'is-visible' : ''}`}
+              style={{ transitionDelay: `${index * 150}ms` }}
+            >
+              <p className="testimonial-quote">"{testimonial.quote}"</p>
+              <div className="testimonial-author">
+                <img src={testimonial.avatar} alt={testimonial.author} />
+                <div>
+                  <h4>{testimonial.author}</h4>
+                  <span>{testimonial.title}</span>
+                </div>
               </div>
             </div>
-          </div>
+          </Tilt>
         ))}
       </div>
     </section>

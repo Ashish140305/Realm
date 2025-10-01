@@ -2,8 +2,15 @@
 
 .footer {
   padding: 4rem 5% 2rem 5%;
-  background-color: #f9fafb;
+  background-color: transparent;
   border-top: 1px solid #e5e7eb;
+}
+
+/* Prepare elements for GSAP animation */
+.footer-brand,
+.footer-links > div,
+.footer-bottom > * {
+  visibility: hidden;
 }
 
 .footer-content {

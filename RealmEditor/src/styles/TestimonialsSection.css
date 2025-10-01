@@ -1,19 +1,13 @@
 .testimonials-section {
   padding: 6rem 5%;
-  background-color: #f9fafb;
+  background-color: transparent; /* Changed from #f9fafb to transparent */
 }
 
+/* Prepare header for GSAP */
 .testimonials-section .section-header {
   text-align: center;
   margin-bottom: 4rem;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.testimonials-section .section-header.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+ 
 }
 
 .testimonials-section h2 { font-size: 2.5rem; font-weight: 700; color: #111827; margin-bottom: 1rem; }
@@ -28,6 +22,7 @@
   margin: 0 auto;
 }
 
+/* Prepare cards for GSAP */
 .testimonial-card {
   background-color: #fff;
   padding: 2rem;
@@ -36,13 +31,13 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
   position: relative;
   z-index: 1;
+ 
+  transition: box-shadow 0.4s ease-in-out;
 }
 
+/* ... rest of the file is unchanged ... */
 .testimonial-card::before {
   content: '';
   position: absolute;
@@ -58,7 +53,7 @@
 
 .testimonial-card:hover::before {
   /* This value is reduced to make the glow more subtle */
-  opacity: 0.6; 
+  opacity: 0.4; 
 }
 
 .testimonial-card.is-visible {
@@ -76,3 +71,9 @@
 .testimonial-author img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 .testimonial-author h4 { margin: 0; font-weight: 600; color: #1f2937; }
 .testimonial-author span { font-size: 0.9rem; color: #6b7280; }
+.testimonials-section {
+  padding: 6rem 0;
+  background-color: transparent; /* Make section transparent */
+  overflow: hidden;
+}
+/* ... rest of the file remains the same ... */

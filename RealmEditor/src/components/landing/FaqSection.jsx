@@ -8,7 +8,9 @@ const faqs = [
   { question: "What is Realm?", answer: "Realm is a real-time collaborative code editor that allows development teams to work together seamlessly in a shared environment. It features built-in version control, team management, and multi-language support." },
   { question: "Is there a free plan available?", answer: "Yes! We offer a free tier for individual developers and small teams to get started. It includes all the core features for real-time collaboration. Paid plans are available for larger teams with advanced needs." },
   { question: "Which languages are supported?", answer: "Realm supports a wide variety of popular programming languages, including Java, JavaScript, Python, C++, HTML, and CSS, with syntax highlighting and basic IntelliSense for each." },
-  { question: "How does the version control work?", answer: "Our version control is designed to be simple and intuitive, inspired by Git. You can create branches, commit changes, and merge code without leaving the editor, making your workflow faster and more efficient." }
+  { question: "How does the version control work?", answer: "Our version control is designed to be simple and intuitive, inspired by Git. You can create branches, commit changes, and merge code without leaving the editor, making your workflow faster and more efficient." },
+  { question: "What is the tech stack behind Realm?", answer: "The frontend is built with React.js, and the backend uses a combination of Java (Spring Boot) for APIs and version control logic, and Node.js with Socket.io for real-time communication." },
+  { question: "Can I deploy my applications from Realm?", answer: "While Realm is primarily a collaborative code editor, it provides a sandboxed environment for code execution. For full deployment, you can integrate with services like Vercel for the frontend and Railway or Fly.io for the backend." }
 ];
 
 export default function FaqSection() {
@@ -40,7 +42,7 @@ export default function FaqSection() {
         {faqs.map((faq, index) => {
           const isOpen = openIndexes.includes(index);
           return (
-            <div 
+            <div
               key={index}
               className={`faq-item ${inView ? 'is-visible' : ''}`}
               style={{ transitionDelay: `${index * 150}ms` }}

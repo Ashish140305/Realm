@@ -1,12 +1,40 @@
 // src/components/landing/Footer.jsx
-import React from 'react';
+import React, { useRef } from 'react';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { FaGithub, FaTwitter, FaLinkedin } from 'react-icons/fa';
 import '../../styles/Footer.css';
 import RealmLogo from '../../assets/RealmLogo';
 
+gsap.registerPlugin(ScrollTrigger);
+
 export default function Footer() {
+  const footerRef = useRef(null);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: footerRef.current,
+        start: 'top 85%', // Start the animation when the footer is 85% from the top of the viewport
+      }
+    });
+
+    tl.fromTo('.footer-brand, .footer-links > div, .footer-bottom > *', {
+      autoAlpha: 0,
+      y: 40,
+    }, {
+      autoAlpha: 1,
+      y: 0,
+      duration: 1,
+      stagger: 0.15,
+      ease: 'power3.out',
+    });
+
+  }, { scope: footerRef });
+
   return (
-    <footer className="footer">
+    <footer ref={footerRef} className="footer">
       <div className="footer-content">
         <div className="footer-brand">
           <RealmLogo />
