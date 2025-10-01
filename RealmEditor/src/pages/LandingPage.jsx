@@ -21,59 +21,68 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const container = useRef();
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useGSAP(() => {
-    const heroHeadline = container.current.querySelector('.hero-text h1');
-    // FIX: Split by "words, chars" to preserve word wrapping integrity
-    const split = new SplitText(heroHeadline, { type: "words, chars" });
-    const chars = split.chars;
+    // Wait for custom fonts to be ready to prevent bugs
+    document.fonts.ready.then(() => {
+      const heroHeadline = container.current.querySelector('.hero-text h1');
+      // FIX: Split by "words, chars" to preserve word wrapping
+      const split = new SplitText(heroHeadline, { type: "words, chars" });
+      const chars = split.chars;
 
-    const tl = gsap.timeline();
+      const tl = gsap.timeline();
 
-    tl.from(chars, {
-      duration: 0.8,
-      autoAlpha: 0,
-      y: 40,
-      rotationX: -90,
-      stagger: {
-        each: 0.03,
-        from: "random"
-      },
-      ease: 'power2.out',
-    })
-    .fromTo([".hero-text p", ".feature-snippets", ".hero-buttons", ".social-proof"], 
-      { autoAlpha: 0, y: 30 },
-      { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.15 },
-      "-=0.5"
-    );
+      tl.from(chars, {
+        duration: 0.8,
+        autoAlpha: 0,
+        y: 40,
+        rotationX: -90,
+        stagger: {
+          each: 0.03,
+          from: "random"
+        },
+        ease: 'power2.out',
+      })
+      .fromTo([".hero-text p", ".feature-snippets", ".hero-buttons", ".social-proof"], 
+        { autoAlpha: 0, y: 30 },
+        { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.15 },
+        "-=0.5"
+      );
 
-    gsap.from(".connecting-line", {
-      strokeDashoffset: (i, target) => target.getTotalLength(),
-      duration: 2,
-      ease: 'power2.inOut',
-      stagger: 0.3,
-      delay: 1.2,
-    });
-
-    const heroSection = container.current.querySelector('.hero-section');
-    const handleMouseMove = (e) => {
-      const { clientX, clientY } = e;
-      const xPercent = (clientX / window.innerWidth - 0.5) * 2;
-      const yPercent = (clientY / window.innerHeight - 0.5) * 2;
-      
-      gsap.to(".floating-element", {
-        x: xPercent * -25,
-        y: yPercent * -25,
-        ease: "power2.out",
-        duration: 1.5
+      gsap.from(".connecting-line", {
+        strokeDashoffset: (i, target) => target.getTotalLength(),
+        duration: 2,
+        ease: 'power2.inOut',
+        stagger: 0.3,
+        delay: 1.2,
       });
-    };
-    
-    heroSection.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      heroSection.removeEventListener('mousemove', handleMouseMove);
-      split.revert();
-    };
+
+      const heroSection = container.current.querySelector('.hero-section');
+      const handleMouseMove = (e) => {
+        const { clientX, clientY } = e;
+        const xPercent = (clientX / window.innerWidth - 0.5) * 2;
+        const yPercent = (clientY / window.innerHeight - 0.5) * 2;
+        
+        gsap.to(".floating-element", {
+          x: xPercent * -25,
+          y: yPercent * -25,
+          ease: "power2.out",
+          duration: 1.5
+        });
+      };
+      
+      heroSection.addEventListener('mousemove', handleMouseMove);
+      
+      return () => {
+        heroSection.removeEventListener('mousemove', handleMouseMove);
+        if (split) {
+          split.revert();
+        }
+      };
+    });
   }, { scope: container });
 
   return (
