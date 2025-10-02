@@ -25,7 +25,7 @@ export default function SignUpForm() {
         <label htmlFor="password">Password</label>
         <input type="password" id="password" placeholder="Create a password" />
       </div>
-      <button type="button" className="continue-btn" onClick={() => handleNavigate('/editor')}>
+      <button type="button" className="continue-btn" onClick={() => handleNavigate('/overview')}>
         Sign Up
       </button>
       <button type="button" className="auth-link" onClick={() => handleNavigate('/login')}>

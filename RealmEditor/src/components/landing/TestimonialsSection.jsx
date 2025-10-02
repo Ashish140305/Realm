@@ -1,7 +1,7 @@
 // src/components/landing/TestimonialsSection.jsx
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
-import { Tilt } from 'react-tilt';
+import Tilt from 'react-parallax-tilt'; // UPDATED: Import from the new library
 import '../../styles/TestimonialsSection.css';
 
 const testimonials = [
@@ -39,7 +39,14 @@ export default function TestimonialsSection() {
       </div>
       <div className="testimonials-grid">
         {testimonials.map((testimonial, index) => (
-          <Tilt key={index} options={{ max: 15, scale: 1.02, speed: 400 }}>
+          <Tilt 
+            key={index} 
+            glareEnable={true} 
+            glareMaxOpacity={0.05} 
+            tiltMaxAngleX={8} 
+            tiltMaxAngleY={8}
+            transitionSpeed={1000}
+          >
             <div
               className={`testimonial-card ${inView ? 'is-visible' : ''}`}
               style={{ transitionDelay: `${index * 150}ms` }}

@@ -1,0 +1,35 @@
+/* src/styles/ProfilePanel.css */
+.profile-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-avatar-container {
+  position: relative;
+  margin-bottom: 16px;
+}
+.profile-avatar {
+  width: 100%;
+  border-radius: 50%;
+  border: 1px solid #30363d;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.profile-username {
+  font-size: 1.25rem;
+  font-weight: 300;
+  color: #8b949e;
+  margin-bottom: 16px;
+}
+
+.profile-bio {
+  color: #c9d1d9;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 16px;
+}

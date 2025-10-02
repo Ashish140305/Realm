@@ -10,17 +10,15 @@ export default function AuthPage() {
   const [isFading, setIsFading] = useState(false);
   const isLogin = location.pathname === '/login';
 
-  // This effect handles the fade-in when you first arrive
   useEffect(() => {
     setIsFading(false);
   }, [location]);
 
-  // This function will be passed to the forms to handle animated navigation
   const handleNavigate = (path) => {
     setIsFading(true);
     setTimeout(() => {
       navigate(path);
-    }, 300); // Match CSS transition duration
+    }, 300); 
   };
 
   return (
@@ -32,7 +30,6 @@ export default function AuthPage() {
           <p>{isLogin ? 'Your Collaborative Coding Canvas' : 'Start your journey of collaborative creation.'}</p>
         </div>
         <div className={`auth-form-panel ${isFading ? 'fading-out' : ''}`}>
-          {/* Outlet renders the child route (LoginForm or SignUpForm) */}
           <Outlet context={handleNavigate} />
         </div>
       </div>

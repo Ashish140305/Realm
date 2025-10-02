@@ -38,7 +38,7 @@ export default function LoginForm() {
     setTimeout(() => {
       // The correct password is 'password123'
       if (password === 'password123') {
-        handleNavigate('/editor');
+        handleNavigate('/overview'); // Updated to navigate to overview
       } else {
         setErrors({ form: 'Invalid UserID or Password.' });
       }
@@ -92,7 +92,7 @@ export default function LoginForm() {
       <button 
         type="button" // Change to type="submit" to enable
         className="continue-btn" 
-        onClick={() => handleNavigate('/editor')}
+        onClick={() => handleNavigate('/overview')}
         // To enable, remove onClick and add: disabled={isLoading}
       >
         Continue

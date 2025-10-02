@@ -3,8 +3,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { FiCheck, FiMail } from 'react-icons/fi'; // Added FiMail icon
-import { Tilt } from 'react-tilt';
+import { FiCheck, FiMail } from 'react-icons/fi';
+import Tilt from 'react-parallax-tilt'; // UPDATED: Import from the new library
 import '../../styles/CtaSection.css';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -12,7 +12,6 @@ gsap.registerPlugin(ScrollTrigger);
 const plans = [
   { name: "Starter", price: { monthly: 0, yearly: 0 }, period: "/ forever", description: "Perfect for individuals and hobby projects.", features: ["Real-time Collaboration", "Basic Version Control", "1 Private Project"], isFeatured: false },
   { name: "Pro", price: { monthly: 15, yearly: 12 }, period: "/ user / month", description: "For professional teams who need more power.", features: ["All Starter Features", "Advanced Version Control", "Unlimited Private Projects", "Team Management"], isFeatured: true },
-  // Overhauled Enterprise Plan
   { name: "Enterprise", isContact: true, description: "Have a large team or custom requirements? Let's build a plan that's tailored to your organization's needs.", features: ["Dedicated Support & SLA", "On-Premise Deployment", "Custom Integrations"], buttonText: "Contact Sales" },
 ];
 
@@ -93,7 +92,14 @@ export default function CtaSection() {
 
       <div className="pricing-grid">
         {plans.map((plan, index) => (
-          <Tilt key={index} options={{ max: 12, scale: 1.02, speed: 1000, glare: true, "max-glare": 0.1 }}>
+          <Tilt 
+            key={index}
+            glareEnable={true} 
+            glareMaxOpacity={0.1} 
+            tiltMaxAngleX={10} 
+            tiltMaxAngleY={10}
+            transitionSpeed={1000}
+          >
             <div className={`pricing-card ${plan.isFeatured ? 'featured' : ''} ${plan.isContact ? 'contact-card' : ''}`}>
               {plan.isFeatured && <div className="featured-badge">Most Popular</div>}
               

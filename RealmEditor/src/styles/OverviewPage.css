@@ -1,0 +1,69 @@
+/* src/styles/OverviewPage.css */
+.overview-page-container {
+  display: flex;
+  justify-content: center;
+  padding: 32px 24px;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+.overview-layout {
+  display: grid;
+  grid-template-columns: 296px 1fr;
+  width: 100%;
+  max-width: 1280px;
+  gap: 24px;
+}
+.overview-sidebar { flex-shrink: 0; }
+.overview-main { min-width: 0; }
+.overview-content { margin-top: 24px; }
+
+/* ================================== */
+/* == PROFESSIONAL UI COMPONENT STYLES == */
+/* ================================== */
+.primary-button {
+  background-color: #238636;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.primary-button:hover { background-color: #2ea043; }
+
+.secondary-button {
+  background-color: #21262d;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  padding: 8px 16px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.secondary-button:hover { background-color: #30363d; border-color: #8b949e; }
+
+.icon-button {
+  background: none; border: none; font-size: 1.25rem;
+  color: #8b949e; cursor: pointer; padding: 8px; border-radius: 50%;
+  transition: background-color 0.2s;
+}
+.icon-button:hover { background-color: rgba(139, 148, 158, 0.1); }
+
+.text-input {
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  width: 100%;
+}
+.text-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+}

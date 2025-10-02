@@ -1,0 +1,47 @@
+/* src/styles/StarredPanel.css */
+.starred-panel .panel-toolbar {
+    margin-bottom: 1.5rem;
+}
+
+.starred-list h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+}
+
+.starred-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.starred-details h5 {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.starred-details p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+.empty-state p {
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+.empty-state span {
+  color: var(--text-secondary);
+}

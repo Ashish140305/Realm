@@ -1,0 +1,84 @@
+/* src/styles/ProjectsPanel.css */
+.projects-panel .panel-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.projects-panel .panel-search-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    width: 300px;
+}
+
+.new-project-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.project-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.project-details h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #8b5cf6;
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+}
+
+.project-details p {
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+}
+
+.project-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.language-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+.language-dot.javascript { background-color: #f7df1e; }
+.language-dot.java { background-color: #b07219; }
+
+.star-count {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.project-actions-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #9ca3af;
+    cursor: pointer;
+}

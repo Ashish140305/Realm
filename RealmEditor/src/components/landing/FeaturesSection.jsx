@@ -2,7 +2,7 @@
 import React from 'react';
 import { useInView } from 'react-intersection-observer';
 import { FiCode, FiGitMerge, FiUsers } from 'react-icons/fi';
-import { Tilt } from 'react-tilt';
+import Tilt from 'react-parallax-tilt'; // UPDATED: Import from the new library
 import '../../styles/FeaturesSection.css'; // This is the correct path
 
 const features = [
@@ -22,7 +22,14 @@ export default function FeaturesSection() {
       </div>
       <div className="features-grid">
         {features.map((feature, index) => (
-          <Tilt key={index} options={{ max: 25, scale: 1.05, speed: 400 }}>
+          <Tilt 
+            key={index} 
+            glareEnable={true} 
+            glareMaxOpacity={0.1} 
+            tiltMaxAngleX={10} 
+            tiltMaxAngleY={10}
+            transitionSpeed={1000}
+          >
             <div
               className={`feature-card ${inView ? 'is-visible' : ''}`}
               style={{ transitionDelay: `${index * 150}ms` }}

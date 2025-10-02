@@ -1,0 +1,48 @@
+/* src/styles/RepositoriesPanel.css */
+.repositories-panel .panel-toolbar {
+    margin-bottom: 1.5rem;
+}
+
+.repositories-list h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.75rem;
+}
+
+.repository-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+}
+
+.repository-item:hover {
+    background-color: #f9fafb;
+}
+
+.file-icon {
+    font-size: 1.5rem;
+    color: #9ca3af;
+}
+
+.repository-details .project-name {
+    color: #6b7280;
+}
+
+.repository-details .file-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.repository-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
