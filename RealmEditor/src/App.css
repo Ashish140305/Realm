@@ -1,9 +1,8 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/*
+  The #root style block has been removed from this file.
+  This was the source of the duplication and layout conflicts on your OverviewPage.
+  By removing it, each page component can now correctly control its own layout.
+*/
 
 .logo {
   height: 6em;
