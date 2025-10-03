@@ -4,32 +4,46 @@ import ProfilePanel from '../components/overview/ProfilePanel';
 import MainContent from '../components/overview/MainContent';
 import ProfileEditorModal from '../components/overview/ProfileEditorModal';
 import SettingsDrawer from '../components/overview/SettingsDrawer';
+import OverviewHeader from '../components/overview/OverviewHeader';
 
-// This component now correctly uses the theme's solid background.
 export default function OverviewPage() {
   const [isEditorOpen, setEditorOpen] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('projects');
+
+  // This function will be passed to the ProfilePanel to open the modal
+  const handleEditProfileClick = () => setEditorOpen(true);
+  
+  // This function will be passed to the modal to close it
+  const handleCloseModal = () => setEditorOpen(false);
 
   return (
-    <>
-      <AnimatePresence>
-        {isEditorOpen && <ProfileEditorModal isOpen={isEditorOpen} onClose={() => setEditorOpen(false)} />}
-      </AnimatePresence>
-      <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} />
-
-      {/* This main container correctly applies the solid background from your theme */ }
-      <div className="min-h-screen w-full bg-bg-primary text-text-primary">
-        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-          <div className="grid grid-cols-12 gap-8">
-            <aside className="col-span-12 lg:col-span-3">
-              <ProfilePanel onEditProfileClick={() => setEditorOpen(true)} />
-            </aside>
-            <main className="col-span-12 lg:col-span-9">
-              <MainContent onSettingsClick={() => setSettingsOpen(true)} />
-            </main>
+    <div className="min-h-screen bg-bg-primary text-text-primary">
+      <OverviewHeader 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onSettingsClick={() => setSettingsOpen(true)}
+      />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <div className="flex flex-col md:flex-row md:space-x-8">
+          <aside className="w-full md:w-1/4 flex-shrink-0">
+            {/* The function to open the modal is passed here */}
+            <ProfilePanel onEditProfileClick={handleEditProfileClick} />
+          </aside>
+          
+          <div className="flex-grow mt-8 md:mt-0">
+            <MainContent activeTab={activeTab} setActiveTab={setActiveTab} />
           </div>
         </div>
-      </div>
-    </>
+      </main>
+
+      {/* The modal's visibility is controlled by isEditorOpen and it receives the close function */}
+      <AnimatePresence>
+        {isEditorOpen && <ProfileEditorModal isVisible={isEditorOpen} onClose={handleCloseModal} />}
+      </AnimatePresence>
+      
+      <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)} />
+    </div>
   );
 }

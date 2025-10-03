@@ -8,16 +8,18 @@ const ThemeManager = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // If we're on the landing page, we remove any theme class and exit.
+    // Clear previous theme classes
+    document.body.className = '';
+
     if (location.pathname === '/') {
-      document.body.className = 'landing-page-theme';
+      // Apply a specific class for the landing page if needed
+      document.body.classList.add('landing-page-theme');
     } else {
-      // Otherwise, apply the selected theme.
-      document.body.className = '';
+      // Apply the selected theme from the store
       document.body.classList.add(theme);
     }
     
-    // Accent color is applied globally regardless of the page.
+    // Apply the accent color globally
     document.documentElement.style.setProperty('--accent-color', accentColor);
   }, [theme, accentColor, location.pathname]);
 

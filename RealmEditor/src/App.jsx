@@ -18,12 +18,11 @@ export default function App() {
       <ThemeManager />
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        {/* The AuthPage now correctly wraps the login and signup routes */}
         <Route element={<AuthPage />}>
-          <Route path="login" element={<LoginForm />} />
-          <Route path="signup" element={<SignUpForm />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/signup" element={<SignUpForm />} />
         </Route>
-        {/* CRITICAL FIX: Ensure OverviewPage is rendered as the direct content for its route. */}
-        {/* The min-h-screen, bg-bg-primary etc. will be handled *inside* OverviewPage.jsx */}
         <Route path="/overview" element={<OverviewPage />} />
         <Route path="/editor" element={<EditorPage />} />
       </Routes>
