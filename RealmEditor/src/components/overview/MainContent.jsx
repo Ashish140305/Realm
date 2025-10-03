@@ -1,15 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings } from 'lucide-react';
-
-// You can create and import these components later
-const ProjectsPanel = () => <div className="p-4 bg-bg-secondary rounded-lg">Projects Content</div>;
-const RepositoriesPanel = () => <div className="p-4 bg-bg-secondary rounded-lg">Repositories Content</div>;
-const StarredPanel = () => <div className="p-4 bg-bg-secondary rounded-lg">Starred Content</div>;
+import ProjectsPanel from './ProjectsPanel';
+import RepositoriesPanel from './RepositoriesPanel';
+import StarredPanel from './StarredPanel';
 
 const TABS = ['Projects', 'Repositories', 'Starred'];
 
-export default function MainContent({ onSettingsClick }) {
+export default function MainContent() {
   const [activeTab, setActiveTab] = useState(TABS[0]);
 
   return (
@@ -18,7 +15,6 @@ export default function MainContent({ onSettingsClick }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
     >
-      {/* Header and Navigation Tabs */}
       <div className="flex justify-between items-center border-b border-border-color mb-6">
         <nav className="flex gap-4">
           {TABS.map(tab => (
@@ -37,12 +33,8 @@ export default function MainContent({ onSettingsClick }) {
             </button>
           ))}
         </nav>
-        <button onClick={onSettingsClick} className="p-2 text-text-secondary rounded-full hover:bg-bg-secondary transition-colors">
-          <Settings size={20} />
-        </button>
       </div>
 
-      {/* Content Panels */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}

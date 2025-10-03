@@ -3,7 +3,6 @@
 @import 'tailwindcss/utilities';
 @import './styles/themes.css';
 
-/* This removes the hardcoded background color that was causing the transparency. */
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -14,14 +13,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* This correctly sets the body to use your theme variables for a solid background. */
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* This ensures the application takes up the full screen without layout conflicts. */
 html, body, #root {
   height: 100%;
   width: 100%;
