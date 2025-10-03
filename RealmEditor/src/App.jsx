@@ -17,16 +17,13 @@ export default function App() {
     <Router>
       <ThemeManager />
       <Routes>
-        {/* FIX: The root path now correctly points to the LandingPage */}
         <Route path="/" element={<LandingPage />} />
-
-        {/* Restore the authentication routes */}
         <Route element={<AuthPage />}>
           <Route path="login" element={<LoginForm />} />
           <Route path="signup" element={<SignUpForm />} />
         </Route>
-
-        {/* Keep the main application routes */}
+        {/* CRITICAL FIX: Ensure OverviewPage is rendered as the direct content for its route. */}
+        {/* The min-h-screen, bg-bg-primary etc. will be handled *inside* OverviewPage.jsx */}
         <Route path="/overview" element={<OverviewPage />} />
         <Route path="/editor" element={<EditorPage />} />
       </Routes>

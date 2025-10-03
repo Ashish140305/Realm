@@ -7,12 +7,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        'gray-dark': '#0d1117',
-        'gray-medium': '#161b22',
-        'gray-light': '#21262d',
-        'gray-text': '#8b949e',
-        'gray-text-bright': '#c9d1d9',
-        'border-color': '#30363d',
+        // This connects Tailwind to your theme's CSS variables
+        'bg-primary': 'var(--bg-primary)',
+        'bg-secondary': 'var(--bg-secondary)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'border-color': 'var(--border-color)',
         'accent': 'var(--accent-color)',
       },
     },
