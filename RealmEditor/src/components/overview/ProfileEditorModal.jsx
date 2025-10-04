@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDropzone } from 'react-dropzone';
 import { X, UploadCloud } from 'lucide-react';
 import useSettingsStore from '../../store/useSettingsStore';
+import { toast } from 'react-toastify';
 
-// Helper component for floating label inputs
 const FloatingLabelInput = ({ label, name, value, onChange, type = 'text' }) => (
   <div className="relative">
     <input
@@ -23,13 +24,30 @@ const FloatingLabelInput = ({ label, name, value, onChange, type = 'text' }) => 
 );
 
 export default function ProfileEditorModal({ isVisible, onClose }) {
-  const { profile, setProfile } = useSettingsStore();
+  const { profile, updateProfile } = useSettingsStore();
   const [formData, setFormData] = useState(profile);
 
-  // Syncs local state if the global profile state changes
   useEffect(() => {
     setFormData(profile);
   }, [profile, isVisible]);
+
+  const onDrop = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result;
+        setFormData((prev) => ({ ...prev, avatar: base64String }));
+      };
+      reader.readAsDataURL(file);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: { 'image/*': ['.jpeg', '.png', '.jpg', '.gif'] },
+    multiple: false,
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -45,7 +63,8 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
   };
 
   const handleSave = () => {
-    setProfile(formData);
+    updateProfile(formData);
+    toast.success("Profile updated successfully!");
     onClose();
   };
 
@@ -53,19 +72,19 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
         >
+          <div className="absolute inset-0 bg-black bg-opacity-70 backdrop-blur-sm" onClick={onClose} />
+
           <motion.div
-            className="w-full max-w-2xl bg-bg-secondary rounded-xl shadow-2xl overflow-hidden border border-border-color"
+            className="relative w-full max-w-2xl bg-card-background rounded-xl shadow-2xl overflow-hidden border border-border-color"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-border-color flex justify-between items-center">
               <h2 className="text-xl font-bold text-text-primary">Edit Profile</h2>
@@ -76,12 +95,11 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
 
             <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
               <div className="flex items-center space-x-6">
-                <img src={formData.avatar || `https://ui-avatars.com/api/?name=${formData.name}`} alt="Avatar" className="w-20 h-20 rounded-full object-cover" />
-                <div className="flex-1">
-                  <div className="w-full h-20 border-2 border-dashed border-border-color rounded-lg flex flex-col items-center justify-center text-text-secondary hover:border-accent hover:text-accent transition-colors cursor-pointer">
-                    <UploadCloud size={24} />
-                    <span className="text-xs mt-1">Click or drag file to upload</span>
-                  </div>
+                <img src={formData.avatar} alt="Avatar Preview" className="w-20 h-20 rounded-full object-cover" />
+                <div {...getRootProps()} className="flex-1 w-full h-20 border-2 border-dashed border-border-color rounded-lg flex flex-col items-center justify-center text-text-secondary hover:border-accent hover:text-accent transition-colors cursor-pointer">
+                  <input {...getInputProps()} />
+                  <UploadCloud size={24} />
+                  <span className="text-xs mt-1">Drop image or click to upload</span>
                 </div>
               </div>
 
@@ -111,18 +129,10 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
             </div>
 
             <div className="p-6 bg-background flex justify-end space-x-4">
-              <motion.button
-                onClick={onClose}
-                className="py-2 px-5 border border-border-color text-text-primary font-semibold rounded-lg hover:bg-border-color transition-colors"
-                whileHover={{ scale: 1.05 }}
-              >
+              <motion.button onClick={onClose} className="py-2 px-5 border border-border-color text-text-primary font-semibold rounded-lg hover:bg-border-color transition-colors" whileHover={{ scale: 1.05 }}>
                 Cancel
               </motion.button>
-              <motion.button
-                onClick={handleSave}
-                className="py-2 px-5 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-accent-hover transition-colors"
-                whileHover={{ scale: 1.05 }}
-              >
+              <motion.button onClick={handleSave} className="py-2 px-5 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-accent-hover transition-colors" whileHover={{ scale: 1.05 }}>
                 Save Changes
               </motion.button>
             </div>
