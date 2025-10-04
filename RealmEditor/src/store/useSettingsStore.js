@@ -6,13 +6,12 @@ const useSettingsStore = create(
     (set) => ({
       profile: {
         name: 'Vedant',
-        username: 'vedant-d', // Default username, now editable
+        username: 'vedant-d',
         bio: 'Hello :D',
         email: 'vedant@gmail.com',
         avatar: null,
         profession: 'Frontend Engineer',
         company: 'Realm Corp',
-        // Social links are part of the profile state
         socials: { 
           github: 'vedantD13', 
           linkedin: 'vedant-s', 
@@ -23,7 +22,20 @@ const useSettingsStore = create(
       accentColor: '#58a6ff',
       reduceMotion: false,
 
-      // Functions to update the state
+      // Renamed for clarity to handle any item type
+      starredItems: ['Socket-Server-Node'], 
+
+      // Updated to be a generic toggle function
+      toggleStarred: (itemId) => set((state) => {
+        const isStarred = state.starredItems.includes(itemId);
+        if (isStarred) {
+          return { starredItems: state.starredItems.filter(id => id !== itemId) };
+        } else {
+          return { starredItems: [...state.starredItems, itemId] };
+        }
+      }),
+
+      // Other functions remain the same
       updateProfile: (data) => set((state) => ({ profile: { ...state.profile, ...data } })),
       setAvatar: (avatarUrl) => set((state) => ({ profile: { ...state.profile, avatar: avatarUrl } })),
       removeAvatar: () => set((state) => ({ profile: { ...state.profile, avatar: null } })),
