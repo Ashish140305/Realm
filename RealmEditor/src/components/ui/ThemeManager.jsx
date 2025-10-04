@@ -1,29 +1,44 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 import useSettingsStore from '../../store/useSettingsStore';
 
+// This function applies the correct theme attribute to the <html> tag
+const applyTheme = (theme) => {
+  const root = document.documentElement;
+  if (theme === 'system') {
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    root.setAttribute('data-theme', systemTheme);
+  } else {
+    root.setAttribute('data-theme', theme);
+  }
+};
+
 const ThemeManager = () => {
-  const theme = useSettingsStore((state) => state.theme);
-  const accentColor = useSettingsStore((state) => state.accentColor);
-  const location = useLocation();
+  const { theme, accentColor } = useSettingsStore();
 
   useEffect(() => {
-    // Clear previous theme classes
-    document.body.className = '';
-
-    if (location.pathname === '/') {
-      // Apply a specific class for the landing page if needed
-      document.body.classList.add('landing-page-theme');
-    } else {
-      // Apply the selected theme from the store
-      document.body.classList.add(theme);
-    }
+    // Apply the theme when the component mounts or the theme state changes
+    applyTheme(theme);
     
-    // Apply the accent color globally
+    // Set the accent color
     document.documentElement.style.setProperty('--accent-color', accentColor);
-  }, [theme, accentColor, location.pathname]);
 
-  return null;
+    // Listener for when the user changes their OS theme
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = () => {
+      // Only apply the change if the user's setting is 'system'
+      if (useSettingsStore.getState().theme === 'system') {
+        applyTheme('system');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    // Cleanup listener on component unmount
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme, accentColor]);
+
+  return null; // This component doesn't render anything
 };
 
 export default ThemeManager;

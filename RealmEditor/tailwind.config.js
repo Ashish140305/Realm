@@ -7,12 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        'bg-primary': 'var(--background-color)',
-        'bg-secondary': 'var(--card-background-color)',
+        'background': 'var(--background-color)',
+        'card-background': 'var(--card-background-color)', // Solid background
+        'primary': 'var(--primary-color)',
+        'accent': 'var(--accent-color)',
         'text-primary': 'var(--primary-text-color)',
         'text-secondary': 'var(--secondary-text-color)',
         'border-color': 'var(--border-color)',
-        'accent': 'var(--accent-color)',
       },
     },
   },

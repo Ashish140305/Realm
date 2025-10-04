@@ -1,32 +1,36 @@
-// src/components/overview/ActivityFeed.jsx
 import React from 'react';
-import { FiGitCommit, FiUploadCloud } from 'react-icons/fi';
-import '../../styles/ActivityFeed.css';
+import { motion } from 'framer-motion';
+import { GitCommit, Star, FilePlus } from 'lucide-react';
 
+// Dummy data for the activity feed
 const activities = [
-    { icon: <FiGitCommit />, text: "You pushed a commit to", project: "RealmEditor-Frontend", time: "2m ago" },
-    { icon: <FiUploadCloud />, text: "A new version of Spring-API-Backend was deployed.", project: "", time: "1h ago" },
-    { icon: <FiGitCommit />, text: "Jane Doe pushed a commit to", project: "Socket-Server-Node", time: "3h ago" },
+  { id: 1, icon: GitCommit, text: 'Pushed a commit to', project: 'RealmEditor-Frontend', time: '2 hours ago' },
+  { id: 2, icon: Star, text: 'Starred the repository', project: 'auth-refactor', time: '1 day ago' },
+  { id: 3, icon: FilePlus, text: 'Created a new file', project: 'API-Backend/utils.js', time: '3 days ago' },
 ];
 
-export default function ActivityFeed() {
+const ActivityFeed = () => {
   return (
-    <div className="activity-feed-card">
-      <h4>Recent Activity</h4>
-      <div className="activity-list">
+    <div className="bg-card-background p-6 rounded-xl shadow-lg">
+      <h3 className="text-md font-semibold text-text-primary mb-4">Recent Activity</h3>
+      <div className="space-y-4">
         {activities.map((activity, index) => (
-          <div key={index} className="activity-item">
-            <div className="activity-icon">{activity.icon}</div>
-            <div className="activity-content">
-              <p>
-                {activity.text}
-                {activity.project && <strong> {activity.project}</strong>}
-              </p>
-              <span>{activity.time}</span>
-            </div>
-          </div>
+          <motion.div
+            key={activity.id}
+            className="flex items-center text-sm"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <activity.icon className="w-4 h-4 text-text-secondary mr-3" />
+            <span className="text-text-secondary">{activity.text}</span>
+            <span className="font-semibold text-accent mx-1.5">{activity.project}</span>
+            <span className="text-text-secondary ml-auto">{activity.time}</span>
+          </motion.div>
         ))}
       </div>
     </div>
   );
-}
+};
+
+export default ActivityFeed;
