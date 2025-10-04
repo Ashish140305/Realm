@@ -1,19 +1,17 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import useSettingsStore from '../../store/useSettingsStore';
-import { Zap, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Zap, Activity, ChevronDown } from 'lucide-react';
 
 // --- Helper Functions ---
-const generateDummyDataForYear = (year) => {
+const generateDummyData = (startYear, endYear) => {
     const data = new Map();
-    const startDate = new Date(year, 0, 1);
-    // Loop through all days of the given year
-    for (let i = 0; i < 366; i++) {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + i);
-        if (date.getFullYear() === year) { // Ensure we stay within the year
-            const dateString = new Date(date).toISOString().split('T')[0];
-            data.set(dateString, { count: Math.floor(Math.random() * 30) });
-        }
+    let currentDate = new Date(startYear, 0, 1);
+    const endDate = new Date(endYear, 11, 31);
+
+    while (currentDate <= endDate) {
+        const dateString = currentDate.toISOString().split('T')[0];
+        data.set(dateString, { count: Math.floor(Math.random() * 30) });
+        currentDate.setDate(currentDate.getDate() + 1);
     }
     return data;
 };
@@ -28,40 +26,45 @@ const StatCard = ({ label, value, icon }) => (
     </div>
 );
 
-const MonthlyHeatmap = ({ accentColor, activityData, insights, year }) => {
+const MonthlyHeatmap = ({ accentColor, activityData, insights, selectedYear }) => {
     const [tooltip, setTooltip] = useState(null);
 
     const yearInReview = useMemo(() => {
         const months = [];
-        for (let i = 0; i < 12; i++) {
-            const monthDate = new Date(year, i, 1);
+        for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+            const monthDate = new Date(selectedYear, monthIndex, 1);
+            const year = monthDate.getFullYear();
             const monthName = monthDate.toLocaleString('default', { month: 'short' });
-            
-            const daysInMonth = new Date(year, i + 1, 0).getDate();
-            const firstDayOfMonth = new Date(year, i, 1).getDay();
+            const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+            const firstDayOfMonth = monthDate.getDay();
             const startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1;
 
             const days = [];
             for (let j = 0; j < daysInMonth; j++) {
-                const dayDate = new Date(year, i, j + 1);
+                const dayDate = new Date(year, monthIndex, j + 1);
                 const dateString = dayDate.toISOString().split('T')[0];
                 const dayData = activityData.find(d => d.date === dateString);
                 days.push({
                     count: dayData?.count || 0,
-                    date: dateString,
+                    date: dayDate,
                 });
             }
-            months.push({ name: monthName, days, startOffset });
+            months.push({ name: monthName, days, startOffset, year });
         }
         return months;
-    }, [activityData, year]);
+    }, [activityData, selectedYear]);
+
+    const formatDateForTooltip = (date) => {
+        const options = { weekday: 'long', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+    }
 
     return (
         <div className="relative p-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                 <div className="md:col-span-2">
+                 <div className="md-col-span-2">
                      <h3 className="text-md font-semibold text-text-primary">Activity Overview</h3>
-                     <p className="text-sm text-text-secondary">{insights.totalContributions} contributions in {year}</p>
+                     <p className="text-sm text-text-secondary">{insights.totalContributions} contributions in {selectedYear}</p>
                 </div>
                 <StatCard label="Most Productive" value={insights.productiveDay} icon={<Activity size={20} className="text-accent mr-3" />} />
                 <StatCard label="Current Streak" value={`${insights.streak} Days`} icon={<Zap size={20} className="text-accent mr-3" />} />
@@ -70,7 +73,7 @@ const MonthlyHeatmap = ({ accentColor, activityData, insights, year }) => {
             <div className="overflow-x-auto pb-2">
                 <div className="flex space-x-4">
                     {yearInReview.map((month) => (
-                        <div key={month.name} className="flex-shrink-0">
+                        <div key={`${month.name}-${month.year}`} className="flex-shrink-0">
                             <p className="text-xs font-semibold text-text-secondary mb-2 text-center">{month.name}</p>
                             <div className="grid grid-cols-7 gap-1.5">
                                 {Array.from({ length: month.startOffset }).map((_, i) => <div key={`spacer-${i}`} className="w-3.5 h-3.5" />)}
@@ -83,7 +86,7 @@ const MonthlyHeatmap = ({ accentColor, activityData, insights, year }) => {
                                             style={{ backgroundColor: accentColor, opacity: day.count > 0 ? opacity : 0.05 }}
                                             onMouseEnter={(e) => {
                                                 const rect = e.currentTarget.getBoundingClientRect();
-                                                setTooltip({ content: `${day.count} contributions on ${day.date}`, x: rect.left + window.scrollX, y: rect.top + window.scrollY });
+                                                setTooltip({ content: `${day.count} contributions on ${formatDateForTooltip(day.date)}`, x: rect.left + window.scrollX, y: rect.top + window.scrollY });
                                             }}
                                             onMouseLeave={() => setTooltip(null)}
                                         />
@@ -99,46 +102,70 @@ const MonthlyHeatmap = ({ accentColor, activityData, insights, year }) => {
     );
 };
 
+// --- Main Component ---
 export default function ActivityDashboard() {
     const accentColor = useSettingsStore((state) => state.accentColor);
-    const [activityData, setActivityData] = useState([]);
+    const [fullActivityData, setFullActivityData] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [insights, setInsights] = useState({ totalContributions: 0, productiveDay: '', streak: 0 });
-    const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [availableYears, setAvailableYears] = useState([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
+    // Fetch and process data once on mount
     useEffect(() => {
-        const fetchContributionData = (year) => {
-            setIsLoading(true);
-            setTimeout(() => {
-                const dummyData = generateDummyDataForYear(year);
-                const formattedData = [], dayCounts = Array(7).fill(0);
-                let total = 0;
+        setIsLoading(true);
+        setTimeout(() => {
+            const currentYear = new Date().getFullYear();
+            const dummyData = generateDummyData(currentYear - 2, currentYear);
+            const formattedData = [];
+            const years = new Set();
 
-                const startDate = new Date(year, 0, 1);
-                for (let i = 0; i < 366; i++) {
-                    const date = new Date(startDate);
-                    date.setDate(startDate.getDate() + i);
-                    if (date.getFullYear() !== year) continue;
-                    const dateString = date.toISOString().split('T')[0];
-                    const count = dummyData.get(dateString)?.count || 0;
-                    formattedData.push({ date: dateString, count });
-                    dayCounts[date.getDay()] += count;
-                    total += count;
-                }
+            dummyData.forEach((value, dateString) => {
+                formattedData.push({ date: dateString, count: value.count });
+                years.add(new Date(dateString).getFullYear());
+            });
 
-                const mostProductiveDayIndex = dayCounts.indexOf(Math.max(...dayCounts));
-                const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-                setActivityData(formattedData);
-                setInsights({
-                    totalContributions: total,
-                    productiveDay: daysOfWeek[mostProductiveDayIndex],
-                    streak: 12 // Placeholder for a more complex cross-year streak logic
-                });
-                setIsLoading(false);
-            }, 500);
+            setFullActivityData(formattedData);
+            setAvailableYears(Array.from(years).sort((a, b) => b - a));
+            setIsLoading(false);
+        }, 500);
+    }, []);
+
+    // Effect to handle clicks outside of the dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
         };
-        fetchContributionData(currentYear);
-    }, [currentYear]);
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [dropdownRef]);
+
+    const { yearlyData, insights } = useMemo(() => {
+        if (!fullActivityData.length) {
+            return { yearlyData: [], insights: { totalContributions: 0, productiveDay: 'N/A', streak: 0 } };
+        }
+        const dataForYear = fullActivityData.filter(d => new Date(d.date).getFullYear() === selectedYear);
+        const dayCounts = Array(7).fill(0);
+        let total = 0;
+        dataForYear.forEach(d => {
+            const dayOfWeek = new Date(d.date).getDay();
+            dayCounts[dayOfWeek] += d.count;
+            total += d.count;
+        });
+        const mostProductiveDayIndex = dayCounts.indexOf(Math.max(...dayCounts));
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        return {
+            yearlyData: dataForYear,
+            insights: {
+                totalContributions: total,
+                productiveDay: daysOfWeek[mostProductiveDayIndex] || 'N/A',
+                streak: 12
+            }
+        };
+    }, [selectedYear, fullActivityData]);
 
     if (isLoading) {
         return <div className="bg-card-background p-4 rounded-xl shadow-lg animate-pulse h-52" />;
@@ -146,12 +173,40 @@ export default function ActivityDashboard() {
 
     return (
         <div className="bg-card-background rounded-xl shadow-lg">
-            <div className="flex justify-end items-center pt-2 pr-4">
-                <button onClick={() => setCurrentYear(currentYear - 1)} className="p-1 text-text-secondary hover:text-text-primary"><ChevronLeft size={20} /></button>
-                <span className="font-semibold text-text-primary mx-2">{currentYear}</span>
-                <button onClick={() => setCurrentYear(currentYear + 1)} disabled={currentYear === new Date().getFullYear()} className="p-1 text-text-secondary hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed"><ChevronRight size={20} /></button>
+            <div className="flex justify-end items-center pt-4 pr-4">
+                {/* New Year Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="flex items-center justify-between w-28 px-3 py-1 text-sm font-semibold bg-background text-text-primary rounded-md border border-accent hover:bg-opacity-50 transition-colors duration-200"
+                    >
+                        <span>{selectedYear}</span>
+                        <ChevronDown size={16} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isDropdownOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-28 bg-card-background border border-accent rounded-md shadow-lg z-10">
+                            {availableYears.map(year => (
+                                <button
+                                    key={year}
+                                    onClick={() => {
+                                        setSelectedYear(year);
+                                        setIsDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-sm ${selectedYear === year ? 'bg-accent text-white' : 'text-text-secondary hover:bg-background'}`}
+                                >
+                                    {year}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-            <MonthlyHeatmap accentColor={accentColor} activityData={activityData} insights={insights} year={currentYear} />
+            <MonthlyHeatmap
+                accentColor={accentColor}
+                activityData={yearlyData}
+                insights={insights}
+                selectedYear={selectedYear}
+            />
         </div>
     );
 }

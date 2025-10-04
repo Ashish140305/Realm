@@ -1,6 +1,71 @@
-body.dark { --bg-primary: #0d1117; --bg-secondary: #161b22; --text-primary: #c9d1d9; --text-secondary: #8b949e; --border-color: #30363d; }
-body.light { --bg-primary: #ffffff; --bg-secondary: #f6f8fa; --text-primary: #24292f; --text-secondary: #57606a; --border-color: #d0d7de; }
-body.solar { --bg-primary: #fdf6e3; --bg-secondary: #eee8d5; --text-primary: #657b83; --text-secondary: #586e75; --border-color: #93a1a1; }
-body.midnight { --bg-primary: #010409; --bg-secondary: #0d1117; --text-primary: #e6edf3; --text-secondary: #7d8590; --border-color: #21262d; }
-body.pastel { --bg-primary: #fbf8ff; --bg-secondary: #f2e9ff; --text-primary: #5d3a7b; --text-secondary: #9a73b5; --border-color: #d9c2ec; }
-body.high-contrast { --bg-primary: #000000; --bg-secondary: #111111; --text-primary: #ffffff; --text-secondary: #cccccc; --border-color: #555555; }
+/* src/styles/themes.css */
+
+:root {
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 0.5rem;
+}
+
+/* Light Theme Variables */
+.light {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card-background: #f7f7f7;
+  --card-foreground: #0a0a0a;
+  --popover-background: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #f7f7f7;
+  --secondary: #f7f7f7;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f7f7f7;
+  --muted-foreground: #707070;
+  --accent-foreground: #0a0a0a;
+  --destructive: #ef4444;
+  --destructive-foreground: #f7f7f7;
+  --border-color: #e5e5e5;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --text-primary: #24292f;
+  --text-secondary: #57606a;
+  --accent-color: #58a6ff;
+
+  /* FIX: Added an adaptive border color for the selected accent */
+  --accent-border-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Dark Theme Variables */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --card-background: #252525;
+  --card-foreground: #ffffff;
+  --popover-background: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #1a1a1a;
+  --secondary: #252525;
+  --secondary-foreground: #ffffff;
+  --muted: #252525;
+  --muted-foreground: #a0a0a0;
+  --accent-foreground: #ffffff;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #ffffff;
+  --border-color: #3a3a3a;
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --accent-color: #58a6ff;
+
+  /* FIX: Added an adaptive border color for the selected accent */
+  --accent-border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Base styles */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s, color 0.3s;
+}

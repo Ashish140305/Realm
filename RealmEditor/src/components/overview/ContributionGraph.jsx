@@ -1,21 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import useSettingsStore from '../../store/useSettingsStore';
-import { Zap, Activity } from 'lucide-react';
+import { Zap, Activity, ChevronDown } from 'lucide-react';
 
-// --- Helper Functions ---
-const generateDummyData = () => {
+const generateDummyData = (startYear, endYear) => {
     const data = new Map();
-    for (let i = 0; i < 365; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateString = date.toISOString().split('T')[0];
+    let currentDate = new Date(startYear, 0, 1);
+    const endDate = new Date(endYear, 11, 31);
+    while (currentDate <= endDate) {
+        const dateString = currentDate.toISOString().split('T')[0];
         data.set(dateString, { count: Math.floor(Math.random() * 30) });
+        currentDate.setDate(currentDate.getDate() + 1);
     }
     return data;
 };
 
-// --- Sub-Components for the new design ---
 const StatCard = ({ label, value, icon }) => (
     <div className="flex items-center">
         {icon}
@@ -26,44 +25,56 @@ const StatCard = ({ label, value, icon }) => (
     </div>
 );
 
-// --- The Main Component ---
 const ContributionGraph = () => {
-    const contributions = generateDummyData();
     const accentColor = useSettingsStore((state) => state.accentColor);
     const [tooltip, setTooltip] = useState(null);
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+    const [fullContributionData, setFullContributionData] = useState(new Map());
+    const [availableYears, setAvailableYears] = useState([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const currentYear = new Date().getFullYear();
+        const data = generateDummyData(currentYear - 2, currentYear);
+        const years = new Set();
+        data.forEach((_, dateString) => {
+            years.add(new Date(dateString).getFullYear());
+        });
+        setFullContributionData(data);
+        setAvailableYears(Array.from(years).sort((a, b) => b - a));
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [dropdownRef]);
 
     const { activityData, totalContributions, productiveDay, streak } = useMemo(() => {
         const data = [];
         let maxCount = 0;
-        const today = new Date();
-        const dayCounts = [0,0,0,0,0,0,0];
-        let currentStreak = 0;
-        let streakBroken = false;
-        
-        for (let i = 0; i < 365; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - (364 - i));
-            const dateString = date.toISOString().split('T')[0];
-            const count = contributions.get(dateString)?.count || 0;
+        const dayCounts = Array(7).fill(0);
+        let total = 0;
+
+        const startDate = new Date(selectedYear, 0, 1);
+        const endDate = new Date(selectedYear, 11, 31);
+
+        for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+            const dateString = d.toISOString().split('T')[0];
+            const count = fullContributionData.get(dateString)?.count || 0;
             if (count > maxCount) maxCount = count;
-            
-            dayCounts[date.getDay()] += count;
-
-            if (i >= 365 - 7 && !streakBroken) { // Check streak for the last 7 days from the end of the data
-                if (count > 0) {
-                    currentStreak++;
-                } else {
-                    streakBroken = true;
-                }
-            }
-
-            data.push({ date: dateString, count });
+            dayCounts[d.getDay()] += count;
+            total += count;
+            data.push({ date: new Date(d), count });
         }
         
         const mostProductiveDayIndex = dayCounts.indexOf(Math.max(...dayCounts));
         const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-        const total = Array.from(contributions.values()).reduce((sum, day) => sum + day.count, 0);
 
         return {
             activityData: data.map(day => ({
@@ -71,37 +82,68 @@ const ContributionGraph = () => {
                 height: maxCount === 0 ? 1 : (day.count / maxCount) * 100,
             })),
             totalContributions: total,
-            productiveDay: daysOfWeek[mostProductiveDayIndex],
-            streak: currentStreak
+            productiveDay: daysOfWeek[mostProductiveDayIndex] || 'N/A',
+            streak: 12 // Placeholder
         };
-    }, [contributions]);
+    }, [selectedYear, fullContributionData]);
+
+    const formatDateForTooltip = (date) => {
+        const options = { weekday: 'long', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+    }
 
     return (
         <div className="bg-card-background p-4 rounded-xl shadow-lg">
-            {/* Top section with stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div className="md:col-span-2">
                      <h3 className="text-md font-semibold text-text-primary">Activity Overview</h3>
-                     <p className="text-sm text-text-secondary">{totalContributions} contributions this year</p>
+                     <p className="text-sm text-text-secondary">{totalContributions} contributions in {selectedYear}</p>
                 </div>
                 <StatCard label="Most Productive" value={productiveDay} icon={<Activity size={20} className="text-accent mr-3" />} />
                 <StatCard label="Current Streak" value={`${streak} Days`} icon={<Zap size={20} className="text-accent mr-3" />} />
             </div>
 
-            {/* The elongated skyline graph */}
+             <div className="flex justify-end items-center mb-4">
+                <div className="relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="flex items-center justify-between w-28 px-3 py-1 text-sm font-semibold bg-background text-text-primary rounded-md border border-accent hover:bg-opacity-50 transition-colors duration-200"
+                    >
+                        <span>{selectedYear}</span>
+                        <ChevronDown size={16} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isDropdownOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-28 bg-card-background border border-accent rounded-md shadow-lg z-10">
+                            {availableYears.map(year => (
+                                <button
+                                    key={year}
+                                    onClick={() => {
+                                        setSelectedYear(year);
+                                        setIsDropdownOpen(false);
+                                    }}
+                                    className={`w-full text-left px-3 py-2 text-sm ${selectedYear === year ? 'bg-accent text-white' : 'text-text-secondary hover:bg-background'}`}
+                                >
+                                    {year}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
             <div
                 className="relative w-full h-28 flex items-end justify-start"
                 onMouseLeave={() => setTooltip(null)}
             >
                 {activityData.map((day, index) => (
                     <div
-                        key={day.date}
-                        className="w-[0.27%] h-full flex items-end"
+                        key={day.date.toISOString()}
+                        className="flex-grow h-full flex items-end"
                         onMouseEnter={(e) => {
                             const rect = e.currentTarget.getBoundingClientRect();
                             setTooltip({
-                                content: `${day.count} contributions on ${day.date}`,
-                                x: rect.left + window.scrollX,
+                                content: `${day.count} contributions on ${formatDateForTooltip(day.date)}`,
+                                x: rect.left + window.scrollX + rect.width / 2,
                                 y: rect.top + window.scrollY,
                             });
                         }}
