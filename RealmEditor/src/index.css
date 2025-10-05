@@ -39,3 +39,48 @@ body {
   color: var(--primary-text-color);
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
+/* Custom Toggle Switch for Modals */
+.toggle-switch {
+  --accent-color: #58a6ff; /* Default accent color */
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  background-color: var(--background);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease-in-out;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background-color: white;
+  border-radius: 9999px;
+  transition: transform 0.2s ease-in-out;
+}
+.toggle-switch:checked {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+.toggle-switch:checked::before {
+  transform: translateX(16px);
+}
+/* Add this to your src/index.css file */
+
+/* Hides the arrows on number inputs for a cleaner look */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
