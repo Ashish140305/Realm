@@ -1,11 +1,13 @@
 // src/components/overview/FocusAssistModal.jsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Target } from 'lucide-react';
+// Import new icons: ListTree for task/project linkage, Clock for break settings
+import { X, Target, ListTree, Clock } from 'lucide-react'; 
 import useSettingsStore from '../../store/useSettingsStore';
-import useFocusStore from '../../store/useFocusStore'; // Import the new focus store
+import useFocusStore from '../../store/useFocusStore';
 
 const durationOptions = [25, 50, 90];
+const defaultBreakDuration = 5; // Default break time
 
 // A cleaner, more formal toggle switch component
 const MinimalistToggle = ({ label, enabled, onChange, accentColor }) => (
@@ -33,6 +35,7 @@ export default function FocusAssistModal({ isOpen, onClose }) {
   
   const startSession = useFocusStore((state) => state.startSession);
 
+  // Existing states
   const [goal, setGoal] = useState('');
   const [duration, setDuration] = useState(durationOptions[0]);
   const [customDuration, setCustomDuration] = useState('');
@@ -40,16 +43,28 @@ export default function FocusAssistModal({ isOpen, onClose }) {
   const [setStatusToFocusing, setSetStatusToFocusing] = useState(true);
   const [hideActivityFeeds, setHideActivityFeeds] = useState(false);
 
+  // New states for added functionality
+  const [linkedTask, setLinkedTask] = useState(''); // New: For Task/Project linkage
+  const [autoScheduleBreak, setAutoScheduleBreak] = useState(true); // New: Pomodoro Toggle
+  const [breakDuration, setBreakDuration] = useState(defaultBreakDuration); // New: Break Time
+
   const handleStartFocusSession = () => {
+    // Basic validation
+    if (!goal || (!duration && !customDuration)) return; 
+
     if (setStatusToFocusing) {
-      setStatus({ text: 'Focusing', pauseNotifications: true });
+      // Pass a specific status text for easier identification in the main header (optional but helpful)
+      setStatus({ text: 'Focusing', pauseNotifications: pauseNotifications });
     } else {
       setStatus(null);
     }
 
     startSession({
       goal,
-      duration: customDuration || duration,
+      linkedTask, // Pass new task state
+      duration: customDuration ? parseInt(customDuration) : duration,
+      breakDuration: autoScheduleBreak ? breakDuration : defaultBreakDuration, // Pass break settings
+      autoScheduleBreak, // Pass break toggle setting
       pauseNotifications,
       hideActivityFeeds,
     });
@@ -88,10 +103,11 @@ export default function FocusAssistModal({ isOpen, onClose }) {
 
             {/* Content with increased spacing */}
             <div className="p-6 space-y-8">
+              
               {/* Goal Input */}
               <div>
                 <label htmlFor="focus-goal" className="text-sm font-medium text-text-secondary mb-2 block">
-                  What is your goal?
+                  Goal / What are you working on?
                 </label>
                 <input
                   id="focus-goal"
@@ -99,6 +115,22 @@ export default function FocusAssistModal({ isOpen, onClose }) {
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   placeholder="e.g., Finalize the API documentation"
+                  className="w-full px-3 py-2 bg-background border border-border-color rounded-md focus:outline-none focus:ring-1 focus:ring-accent text-text-primary"
+                />
+              </div>
+
+              {/* New: Task/Project Linkage Input */}
+              <div>
+                <label htmlFor="linked-task" className="text-sm font-medium text-text-secondary mb-2 flex items-center space-x-2">
+                  <ListTree className="w-4 h-4" />
+                  <span>Link to a Project/Task (Optional)</span>
+                </label>
+                <input
+                  id="linked-task"
+                  type="text"
+                  value={linkedTask}
+                  onChange={(e) => setLinkedTask(e.target.value)}
+                  placeholder="e.g., Project X Documentation, Task #145"
                   className="w-full px-3 py-2 bg-background border border-border-color rounded-md focus:outline-none focus:ring-1 focus:ring-accent text-text-primary"
                 />
               </div>
@@ -135,8 +167,8 @@ export default function FocusAssistModal({ isOpen, onClose }) {
                 </div>
               </div>
 
-              {/* Toggles */}
-              <div className="pt-6 border-t border-border-color space-y-2">
+              {/* Toggles and Break Settings */}
+              <div className="pt-6 border-t border-border-color space-y-4">
                  <MinimalistToggle 
                     label="Pause notifications"
                     enabled={pauseNotifications}
@@ -155,6 +187,30 @@ export default function FocusAssistModal({ isOpen, onClose }) {
                     onChange={() => setHideActivityFeeds(p => !p)}
                     accentColor={accentColor}
                  />
+
+                 {/* New: Auto-schedule Break Toggle (Pomodoro) */}
+                 <div className="space-y-2">
+                    <MinimalistToggle 
+                       label="Auto-schedule a break (Pomodoro)"
+                       enabled={autoScheduleBreak}
+                       onChange={() => setAutoScheduleBreak(p => !p)}
+                       accentColor={accentColor}
+                    />
+                    {autoScheduleBreak && (
+                      <div className="pl-4 pt-2 flex items-center space-x-2">
+                         <Clock className="w-4 h-4 text-text-secondary" />
+                         <input
+                            type="number"
+                            value={breakDuration}
+                            onChange={(e) => setBreakDuration(Math.max(1, parseInt(e.target.value) || defaultBreakDuration))}
+                            min="1"
+                            max="60"
+                            className="w-20 px-2 py-1 bg-background border border-border-color rounded-md text-sm text-center focus:outline-none focus:ring-1 focus:ring-accent text-text-primary no-spinner"
+                         />
+                         <span className="text-sm text-text-secondary">minutes break</span>
+                      </div>
+                    )}
+                 </div>
               </div>
             </div>
 
@@ -168,10 +224,11 @@ export default function FocusAssistModal({ isOpen, onClose }) {
               </button>
               <motion.button
                 onClick={handleStartFocusSession}
-                className="px-5 py-2 text-sm font-medium text-white rounded-md"
+                className="px-5 py-2 text-sm font-medium text-white rounded-md disabled:opacity-50"
                 style={{ backgroundColor: accentColor }}
                 whileHover={{ filter: 'brightness(1.1)' }}
                 whileTap={{ scale: 0.98 }}
+                disabled={!goal || (!duration && !customDuration)}
               >
                 Begin Session
               </motion.button>
