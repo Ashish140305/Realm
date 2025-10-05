@@ -1,44 +1,52 @@
 import { useEffect } from 'react';
 import useSettingsStore from '../../store/useSettingsStore';
 
-// This function applies the correct theme attribute to the <html> tag
-const applyTheme = (theme) => {
-  const root = document.documentElement;
-  if (theme === 'system') {
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    root.setAttribute('data-theme', systemTheme);
-  } else {
-    root.setAttribute('data-theme', theme);
-  }
-};
-
-const ThemeManager = () => {
-  const { theme, accentColor } = useSettingsStore();
+export default function ThemeManager() {
+  const theme = useSettingsStore((state) => state.theme);
+  const fontSize = useSettingsStore((state) => state.fontSize);
+  const compactMode = useSettingsStore((state) => state.compactMode);
+  // NEW: Get accentColor from the store
+  const accentColor = useSettingsStore((state) => state.accentColor);
 
   useEffect(() => {
-    // Apply the theme when the component mounts or the theme state changes
-    applyTheme(theme);
+    const root = document.documentElement;
+    const isDark =
+      theme === 'dark' ||
+      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     
-    // Set the accent color
-    document.documentElement.style.setProperty('--accent-color', accentColor);
+    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  }, [theme]);
 
-    // Listener for when the user changes their OS theme
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  // NEW: This useEffect is added to apply the accent color globally
+  useEffect(() => {
+    const root = document.documentElement;
+    if (accentColor) {
+      root.style.setProperty('--accent-color', accentColor);
+    }
+  }, [accentColor]);
+  // END NEW
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('text-sm', 'text-base', 'text-lg');
     
-    const handleChange = () => {
-      // Only apply the change if the user's setting is 'system'
-      if (useSettingsStore.getState().theme === 'system') {
-        applyTheme('system');
-      }
-    };
+    if (fontSize === 'small') {
+      root.classList.add('text-sm');
+    } else if (fontSize === 'large') {
+      root.classList.add('text-lg');
+    } else {
+      root.classList.add('text-base');
+    }
+  }, [fontSize]);
 
-    mediaQuery.addEventListener('change', handleChange);
+  useEffect(() => {
+    const root = document.documentElement;
+    if (compactMode) {
+      root.classList.add('compact');
+    } else {
+      root.classList.remove('compact');
+    }
+  }, [compactMode]);
 
-    // Cleanup listener on component unmount
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme, accentColor]);
-
-  return null; // This component doesn't render anything
-};
-
-export default ThemeManager;
+  return null;
+}

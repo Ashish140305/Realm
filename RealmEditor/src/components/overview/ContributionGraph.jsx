@@ -104,35 +104,35 @@ const ContributionGraph = () => {
             </div>
 
              <div className="flex justify-end items-center mb-4">
-                <div className="relative" ref={dropdownRef}>
-                    <button
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                        className="flex items-center justify-between w-28 px-3 py-1 text-sm font-semibold bg-background text-text-primary rounded-md border border-accent hover:bg-opacity-50 transition-colors duration-200"
-                    >
-                        <span>{selectedYear}</span>
-                        <ChevronDown size={16} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    {isDropdownOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-28 bg-card-background border border-accent rounded-md shadow-lg z-10">
-                            {availableYears.map(year => (
-                                <button
-                                    key={year}
-                                    onClick={() => {
-                                        setSelectedYear(year);
-                                        setIsDropdownOpen(false);
-                                    }}
-                                    className={`w-full text-left px-3 py-2 text-sm ${selectedYear === year ? 'bg-accent text-white' : 'text-text-secondary hover:bg-background'}`}
-                                >
-                                    {year}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
+                 <div className="relative" ref={dropdownRef}>
+                     <button
+                         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                         className="flex items-center justify-between w-28 px-3 py-1 text-sm font-semibold bg-background text-text-primary rounded-md border border-accent hover:bg-opacity-50 transition-colors duration-200"
+                     >
+                         <span>{selectedYear}</span>
+                         <ChevronDown size={16} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                     </button>
+                     {isDropdownOpen && (
+                         <div className="absolute top-full right-0 mt-2 w-28 bg-card-background border border-accent rounded-md shadow-lg z-10">
+                             {availableYears.map(year => (
+                                 <button
+                                     key={year}
+                                     onClick={() => {
+                                         setSelectedYear(year);
+                                         setIsDropdownOpen(false);
+                                     }}
+                                     className={`w-full text-left px-3 py-2 text-sm ${selectedYear === year ? 'bg-accent text-white' : 'text-text-secondary hover:bg-background'}`}
+                                 >
+                                     {year}
+                                 </button>
+                             ))}
+                         </div>
+                     )}
+                 </div>
+             </div>
 
             <div
-                className="relative w-full h-28 flex items-end justify-start"
+                className="relative w-full h-28 flex items-end justify-start overflow-x-auto no-scrollbar"
                 onMouseLeave={() => setTooltip(null)}
             >
                 {activityData.map((day, index) => (

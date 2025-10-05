@@ -1,63 +1,100 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import useSettingsStore from '../../store/useSettingsStore';
 
 const themes = ['Light', 'Dark', 'System'];
 const accentColors = [
-  { name: 'Blue', color: '#58a6ff' },
-  { name: 'Green', color: '#3fb950' },
-  { name: 'Purple', color: '#a371f7' },
-  { name: 'Pink', color: '#db61a2' },
-  { name: 'Orange', color: '#e36209' },
+  '#3b82f6',
+  '#ef4444',
+  '#10b981',
+  '#f97316',
+  '#8b5cf6',
+  '#d946ef',
 ];
 
+const ThemeCard = ({ name, selectedTheme, setTheme }) => {
+  const isSelected = selectedTheme === name;
+  
+  const themeStyles = {
+    Light: { bg: 'bg-white', circle: 'bg-gray-300' },
+    Dark: { bg: 'bg-gray-800', circle: 'bg-gray-600' },
+    System: { bg: 'bg-gradient-to-br from-white to-gray-800', circle: 'bg-gray-500' },
+  };
+  
+  const styles = themeStyles[name];
+
+  return (
+    <div
+      onClick={() => setTheme(name)}
+      className={`cursor-pointer rounded-lg p-3 border-2 transition-all duration-200 ${
+        isSelected ? 'border-accent shadow-lg' : 'border-border-color hover:border-gray-500'
+      }`}
+    >
+      <div className={`w-full h-16 rounded-md flex items-center justify-center ${styles.bg}`}>
+        <div className={`w-8 h-8 rounded-full ${styles.circle}`}></div>
+      </div>
+      <p className={`mt-2 text-sm font-medium text-center ${isSelected ? 'text-accent' : 'text-text-primary'}`}>
+        {name}
+      </p>
+    </div>
+  );
+};
+
+
 export default function AppearanceSettings() {
-  // Replace with your theme state
-  const [currentTheme, setCurrentTheme] = React.useState('Dark');
-  const [currentAccent, setCurrentAccent] = React.useState('#58a6ff');
+  const { theme, setTheme, accentColor, setAccentColor } = useSettingsStore();
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6 text-text-primary">Appearance</h2>
-
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold mb-3 text-text-primary">Theme</h3>
-        <div className="p-1 bg-background rounded-lg flex space-x-1">
-          {themes.map((theme) => (
-            <button
-              key={theme}
-              onClick={() => setCurrentTheme(theme)}
-              className="relative w-full py-2 text-sm font-medium text-text-secondary transition-colors"
-            >
-              {currentTheme === theme && (
-                <motion.div
-                  className="absolute inset-0 bg-border-color rounded-md"
-                  layoutId="theme-pill"
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">{theme}</span>
-            </button>
-          ))}
-        </div>
+      <h3 className="text-lg font-semibold mb-2 text-text-primary">Theme</h3>
+      <p className="text-sm text-text-secondary mb-4">
+        Choose how Realm looks to you. Select a theme or sync with your system.
+      </p>
+      
+      <div className="grid grid-cols-3 gap-4">
+        {themes.map((t) => (
+          <ThemeCard key={t} name={t} selectedTheme={theme} setTheme={setTheme} />
+        ))}
       </div>
 
-      <div>
-        <h3 className="text-lg font-semibold mb-3 text-text-primary">Accent Color</h3>
-        <div className="flex space-x-3">
-          {accentColors.map((accent) => (
-            <motion.button
-              key={accent.name}
-              onClick={() => setCurrentAccent(accent.color)}
-              className="w-8 h-8 rounded-full border-2"
-              style={{
-                backgroundColor: accent.color,
-                borderColor: currentAccent === accent.color ? accent.color : 'transparent',
-              }}
-              whileHover={{ scale: 1.1 }}
-              title={accent.name}
+      <div className="border-b border-border-color my-6"></div>
+
+      <h3 className="text-lg font-semibold mt-6 mb-2 text-text-primary">
+        Accent Color
+      </h3>
+      <p className="text-sm text-text-secondary mb-4">
+        Select a color for buttons, highlights, and other UI elements.
+      </p>
+      <div className="flex flex-wrap items-center gap-3"> {/* MODIFIED: Added items-center */}
+        {accentColors.map((color) => (
+          <button
+            key={color}
+            onClick={() => setAccentColor(color)}
+            className={`w-8 h-8 rounded-full transition-transform hover:scale-110 ${
+              accentColor === color
+                ? 'ring-2 ring-offset-2 ring-offset-card-background ring-accent'
+                : ''
+            }`}
+            style={{ backgroundColor: color }}
+            aria-label={`Set accent color to ${color}`}
+          />
+        ))}
+
+        {/* NEW: Added the custom color picker input */}
+        <div className="relative w-8 h-8">
+            <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => setAccentColor(e.target.value)}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                title="Custom Color"
             />
-          ))}
+            <div
+                className="w-full h-full rounded-full border-2 border-dashed border-border-color flex items-center justify-center"
+                style={{ backgroundColor: accentColor }}
+            >
+            </div>
         </div>
+        {/* END NEW */}
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 /* src/index.css */
 
 /* Correctly ordered imports */
@@ -84,3 +85,40 @@ body {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* ************************************************************ */
+/* --- SCROLLBAR HIDING: GLOBAL & UTILITY CLASS --- */
+/* ************************************************************ */
+
+/* Global Hiding: Target the main page scrollbar */
+::-webkit-scrollbar {
+    width: 0px; /* For vertical scrollbars */
+    height: 0px; /* For horizontal scrollbars */
+    background: transparent; 
+}
+html, body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Utility Class Hiding: Use this class on any inner component (like graph/settings) */
+.no-scrollbar::-webkit-scrollbar {
+    width: 0px; 
+    height: 0px; 
+    background: transparent;
+}
+.no-scrollbar {
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+/* NEW: Compact Mode Styles */
+/* This is an example; you can add more selectors to make more of the UI compact */
+.compact .p-1 { padding: 0.125rem; }
+.compact .p-2 { padding: 0.25rem; }
+.compact .p-3 { padding: 0.5rem; }
+.compact .p-4 { padding: 0.75rem; }
+.compact .p-6 { padding: 1rem; }
+.compact .gap-2 { gap: 0.25rem; }
+.compact .gap-3 { gap: 0.5rem; }
+.compact .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+.compact .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }

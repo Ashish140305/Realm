@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Palette, Shield, Bell } from 'lucide-react';
+// NEW: Import the 'X' icon for the close button
+import { User, Palette, Shield, Bell, X } from 'lucide-react';
 import AppearanceSettings from '../components/settings/AppearanceSettings';
 
 const settingsTabs = [
@@ -51,7 +52,26 @@ export default function SettingsPage({ isVisible, onClose }) {
             </div>
 
             {/* Content */}
-            <div className="w-3/4 p-6 overflow-y-auto">
+            <div className="w-3/4 p-6 overflow-y-auto no-scrollbar">
+              {/* NEW: Added a header for the title and close button */}
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-text-primary">
+                  {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                </h2>
+                <button
+                  onClick={onClose}
+                  className="p-1.5 rounded-full text-text-secondary hover:bg-border-color hover:text-text-primary transition-colors"
+                  aria-label="Close settings"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              {/* END NEW */}
+
+              {/* NEW: Added a divider to separate header from content */}
+              <div className="border-b border-border-color my-4"></div>
+              {/* END NEW */}
+
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeTab}
