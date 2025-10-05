@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import useSettingsStore from '../../store/useSettingsStore';
 import { Zap, Activity, ChevronDown } from 'lucide-react';
 
-// --- Helper Functions ---
+// --- Helper Functions (Intact) ---
 const generateDummyData = (startYear, endYear) => {
     const data = new Map();
     let currentDate = new Date(startYear, 0, 1);
@@ -33,6 +33,8 @@ const StatCard = ({ label, value, icon }) => (
 
 const MonthlyHeatmap = ({ accentColor, activityData, selectedYear }) => {
     const [tooltip, setTooltip] = useState(null);
+    // 1. ADD REF: Use a ref to target the parent container's position
+    const heatmapRef = useRef(null);
 
     const yearInReview = useMemo(() => {
         const months = [];
@@ -41,7 +43,6 @@ const MonthlyHeatmap = ({ accentColor, activityData, selectedYear }) => {
 
         // Loop backwards for the last 12 months.
         for (let i = 0; i < 12; i++) {
-            // FIX: This now generates months in reverse chronological order (Current month first)
             const monthDate = new Date(selectedYear, endMonth - i, 1);
             const year = monthDate.getFullYear();
             const monthIndex = monthDate.getMonth();
@@ -64,7 +65,6 @@ const MonthlyHeatmap = ({ accentColor, activityData, selectedYear }) => {
             }
             months.push({ name: monthName, days, startOffset, year });
         }
-        // FIX: Removed the .reverse() call to keep the current month at the beginning.
         return months;
     }, [activityData, selectedYear]);
 
@@ -74,11 +74,11 @@ const MonthlyHeatmap = ({ accentColor, activityData, selectedYear }) => {
     }
 
     return (
-        <div className="relative p-4">
+        // 2. ATTACH REF: Attach the ref to the relative container
+        <div className="relative p-4" ref={heatmapRef}> 
             <div className="overflow-x-auto pb-2">
                 <div className="flex space-x-4">
                     {yearInReview.map((month) => (
-                        // FIX: Removed fixed width `w-32` to allow natural sizing and prevent elongation.
                         <div key={`${month.name}-${month.year}`} className="flex-shrink-0">
                             <p className="text-xs font-semibold text-text-secondary mb-2 text-center">{month.name}</p>
                             <div className="grid grid-cols-7 gap-1.5">
@@ -91,8 +91,19 @@ const MonthlyHeatmap = ({ accentColor, activityData, selectedYear }) => {
                                             className="w-3.5 h-3.5 rounded-sm transition-transform duration-150 hover:scale-125"
                                             style={{ backgroundColor: accentColor, opacity }}
                                             onMouseEnter={(e) => {
-                                                const rect = e.currentTarget.getBoundingClientRect();
-                                                setTooltip({ content: `${day.count} contributions on ${formatDateForTooltip(day.date)}`, x: rect.left + window.scrollX + rect.width / 2, y: rect.top + window.scrollY });
+                                                // 3. CORRECT CALCULATION: Calculate position relative to the heatmap container
+                                                if (!heatmapRef.current) return;
+                                                
+                                                const dayRect = e.currentTarget.getBoundingClientRect();
+                                                const heatmapRect = heatmapRef.current.getBoundingClientRect();
+
+                                                setTooltip({ 
+                                                    content: `${day.count} contributions on ${formatDateForTooltip(day.date)}`, 
+                                                    // x: Relative x position + half the day box width (for center alignment)
+                                                    x: dayRect.left - heatmapRect.left + dayRect.width / 2, 
+                                                    // y: Relative y position (position the tooltip above the box)
+                                                    y: dayRect.top - heatmapRect.top, 
+                                                });
                                             }}
                                             onMouseLeave={() => setTooltip(null)}
                                         />
@@ -103,12 +114,21 @@ const MonthlyHeatmap = ({ accentColor, activityData, selectedYear }) => {
                     ))}
                 </div>
             </div>
-            {tooltip && <div className="absolute z-10 bg-background text-text-primary text-xs rounded-md px-2 py-1 shadow-lg pointer-events-none -translate-x-1/2" style={{ top: `${tooltip.y - 35}px`, left: `${tooltip.x}px` }}>{tooltip.content}</div>}
+            {/* 4. RENDER WITH RELATIVE COORDINATES */}
+            {tooltip && (
+                <div 
+                    className="absolute z-10 bg-background text-text-primary text-xs rounded-md px-2 py-1 shadow-lg pointer-events-none -translate-x-1/2" 
+                    // Use calculated relative position. Offset Y by -10px to place it above the element.
+                    style={{ top: `${tooltip.y - 10}px`, left: `${tooltip.x}px` }} 
+                >
+                    {tooltip.content}
+                </div>
+            )}
         </div>
     );
 };
 
-// --- Main Component (Structure preserved) ---
+// --- Main Component (ActivityDashboard) (Intact) ---
 export default function ActivityDashboard() {
     const accentColor = useSettingsStore((state) => state.accentColor);
     const [fullActivityData, setFullActivityData] = useState(new Map());
@@ -168,7 +188,7 @@ export default function ActivityDashboard() {
         return {
             totalContributions: total,
             productiveDay: daysOfWeek[mostProductiveDayIndex],
-            streak: 12 // Keep existing feature as requested
+            streak: 12 
         };
     }, [selectedYear, fullActivityData]);
 

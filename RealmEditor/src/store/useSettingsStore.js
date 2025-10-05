@@ -1,9 +1,10 @@
+// src/store/useSettingsStore.js
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 const useSettingsStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       profile: {
         name: 'Vedant',
         username: 'vedant-d',
@@ -21,10 +22,13 @@ const useSettingsStore = create(
       theme: 'dark',
       accentColor: '#58a6ff',
       reduceMotion: false,
-      status: null, // Added this line
-
-      // Renamed for clarity to handle any item type
+      status: null, 
       starredItems: ['Socket-Server-Node'], 
+
+      // === CONTEXT HUB STATE ===
+      workingContextHistory: [], // [{ text: 'Reviewing PR #45', date: Date.now() }, ...]
+      pinnedTask: null, // { id: '45', type: 'PR', name: 'Fix Sidebar Bug' }
+      // =============================
 
       // Updated to be a generic toggle function
       toggleStarred: (itemId) => set((state) => {
@@ -35,6 +39,26 @@ const useSettingsStore = create(
           return { starredItems: [...state.starredItems, itemId] };
         }
       }),
+
+      // NEW ACTION: Manages the context history
+      setWorkingContext: (contextText) => set((state) => {
+        if (!contextText) return state;
+
+        const newContext = { text: contextText, date: Date.now() };
+        // Filter out duplicates and put the new context at the start
+        const history = [newContext, ...state.workingContextHistory.filter(c => c.text !== contextText)];
+        
+        // Keep history limited to 5 items (Quick-Switcher list size)
+        return { workingContextHistory: history.slice(0, 5) };
+      }),
+      
+      // *** NEW ACTION: Allows deleting a context item by its unique date timestamp ***
+      removeContextFromHistory: (dateToRemove) => set((state) => ({
+          workingContextHistory: state.workingContextHistory.filter(context => context.date !== dateToRemove)
+      })),
+
+      // NEW ACTION: Sets the pinned task
+      setPinnedTask: (taskDetails) => set({ pinnedTask: taskDetails }), // Accepts null to unpin
 
       // Other functions remain the same
       updateProfile: (data) => set((state) => ({ profile: { ...state.profile, ...data } })),
