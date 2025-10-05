@@ -19,4 +19,10 @@ public class User {
     private String userId;
     private String email;
     private String password;
+    private String profession;
+    private String company;
+    private String bio;
+    private String github;
+    private String linkedin;
+    private String twitter;
 }

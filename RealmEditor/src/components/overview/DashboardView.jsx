@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { GitPullRequest, CheckCircle, Plus, ArrowRight, Code, FileCode2, Zap, GitCommit, Activity } from 'lucide-react';
 import ActivityDashboard from './ActivityDashboard';
 import useSettingsStore from '../../store/useSettingsStore';
+import QuickActionsPanel from './QuickActionsPanel';
 
 // --- Consolidated Mock Data for all panels ---
 const jumpBackInData = [
@@ -57,10 +58,11 @@ const JumpBackInCard = ({ item, index }) => {
     );
 };
 
-const QuickActionCard = ({ action, index }) => {
+const QuickActionCard = ({ action, index, onClick }) => { // Added onClick prop
     const Icon = action.icon;
     return (
         <motion.button
+            onClick={onClick} // Use the onClick prop here
             className="bg-card-background p-4 rounded-xl border border-border-color text-left w-full h-full transition-all duration-200 shadow-sm hover:border-accent hover:shadow-lg hover:-translate-y-1"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
             <div className="flex items-center gap-4">
@@ -141,19 +143,27 @@ const MyStatsPanel = ({ stats }) => {
 
 
 // --- The Main, Final Dashboard View ---
-export default function DashboardView() {
+export default function DashboardView({ onNewProjectClick }) { // Receive the prop
   return (
     <motion.div className="space-y-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <ActivityDashboard />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* --- Main Content Column (2/3 width) --- */}
         <div className="lg:col-span-2 space-y-8">
           <div>
             <h2 className="text-xl font-bold text-text-primary mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {quickActionsData.map((action, index) => (<QuickActionCard key={index} action={action} index={index} />))}
+               {quickActionsData.map((action, index) => (
+                 <QuickActionCard
+                    key={index}
+                    action={action}
+                    index={index}
+                    // Add onClick handler here for the "New Project" action
+                    onClick={action.title === 'New Project' ? onNewProjectClick : null}
+                  />
+                ))}
             </div>
           </div>
           <div>
@@ -170,7 +180,7 @@ export default function DashboardView() {
           <MyStatsPanel stats={statsData} />
           <RecentActivityPanel items={activityItemsData} />
         </div>
-        
+
       </div>
     </motion.div>
   );

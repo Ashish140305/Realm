@@ -18,12 +18,13 @@ export default function App() {
       <ThemeManager />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        {/* The AuthPage now correctly wraps the login and signup routes */}
         <Route element={<AuthPage />}>
           <Route path="/login" element={<LoginForm />} />
           <Route path="/signup" element={<SignUpForm />} />
         </Route>
         <Route path="/overview" element={<OverviewPage />} />
+        {/* Updated Route */}
+        <Route path="/editor/:projectName" element={<EditorPage />} />
         <Route path="/editor" element={<EditorPage />} />
       </Routes>
       <ToastContainer position="bottom-right" theme="colored" autoClose={3000} hideProgressBar />
