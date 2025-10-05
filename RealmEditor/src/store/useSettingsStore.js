@@ -21,6 +21,7 @@ const useSettingsStore = create(
       theme: 'dark',
       accentColor: '#58a6ff',
       reduceMotion: false,
+      status: null, // Added this line
 
       // Renamed for clarity to handle any item type
       starredItems: ['Socket-Server-Node'], 
@@ -42,6 +43,7 @@ const useSettingsStore = create(
       setTheme: (theme) => set({ theme }),
       setAccentColor: (color) => set({ accentColor: color }),
       toggleReduceMotion: () => set((state) => ({ reduceMotion: !state.reduceMotion })),
+      setStatus: (statusDetails) => set({ status: statusDetails }),
     }),
     { 
       name: 'realm-app-storage', 
