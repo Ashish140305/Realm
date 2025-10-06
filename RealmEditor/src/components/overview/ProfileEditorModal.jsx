@@ -62,10 +62,26 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
     }
   };
 
-  const handleSave = () => {
-    updateProfile(formData);
-    toast.success("Profile updated successfully!");
-    onClose();
+  const handleSave = async () => {
+    try {
+      const response = await fetch(`/api/profile/${profile.username}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        updateProfile(formData); // Update local state in Zustand
+        toast.success("Profile updated successfully!");
+        onClose();
+      } else {
+        const errorText = await response.text();
+        toast.error(`Failed to update profile: ${errorText}`);
+      }
+    } catch (error) {
+      console.error("Update profile error:", error);
+      toast.error("An error occurred while updating the profile.");
+    }
   };
 
   return (
@@ -104,7 +120,8 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FloatingLabelInput label="Full Name" name="name" value={formData.name} onChange={handleInputChange} />
+                {/* Corrected name and value for Full Name */}
+                <FloatingLabelInput label="Full Name" name="fullName" value={formData.fullName} onChange={handleInputChange} />
                 <FloatingLabelInput label="Username" name="username" value={formData.username} onChange={handleInputChange} />
                 <FloatingLabelInput label="Profession" name="profession" value={formData.profession} onChange={handleInputChange} />
                 <FloatingLabelInput label="Company" name="company" value={formData.company} onChange={handleInputChange} />
