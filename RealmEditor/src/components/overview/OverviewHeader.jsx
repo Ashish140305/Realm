@@ -100,8 +100,6 @@ const ContextModal = ({ isOpen, onClose }) => {
     );
 };
 // ------------------------------------------
-
-
 export default function OverviewHeader({ onSettingsClick }) {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isInboxDrawerOpen, setInboxDrawerOpen] = useState(false);
@@ -146,7 +144,6 @@ export default function OverviewHeader({ onSettingsClick }) {
   
   const progressPercent = getProgressPercent();
   const circumference = 94.25; 
-
 
   const handleGoToEditor = () => navigate('/editor');
 
