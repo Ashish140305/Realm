@@ -20,7 +20,7 @@ function greet() {
         height="calc(100% - 35px)" // Adjust height to account for tabs
         defaultLanguage="javascript"
         defaultValue={code}
-        theme="vs" // Changed from "vs-dark" to "vs" (light theme)
+        theme="vs-dark" // Changed to dark theme
         options={{
           minimap: { enabled: true },
           fontSize: 14,
