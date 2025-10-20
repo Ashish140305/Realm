@@ -1,9 +1,8 @@
-// src/components/editor/TopBar.jsx
 import React from 'react';
 import '../../styles/TopBar.css';
 import { VscPlay, VscRepoPush, VscVmConnect } from 'react-icons/vsc';
 
-export default function TopBar({ onCollaborateClick }) {
+export default function TopBar({ onCollaborateClick, onRunCode }) {
   return (
     <div className="top-bar">
       <div className="menu-items">
@@ -17,7 +16,7 @@ export default function TopBar({ onCollaborateClick }) {
       </div>
       <div className="action-buttons">
         <button className="action-btn" title="Commit & Push"><VscRepoPush /></button>
-        <button className="action-btn run-btn" title="Run Code"><VscPlay /></button>
+        <button className="action-btn run-btn" title="Run Code" onClick={onRunCode}><VscPlay /></button>
         <button className="action-btn" title="Collaborate" onClick={onCollaborateClick}><VscVmConnect /></button>
       </div>
     </div>

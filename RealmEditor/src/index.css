@@ -1,22 +1,26 @@
 /* src/index.css */
 
 /* Correctly ordered imports */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
-@import './styles/themes.css'; /* Assuming this file exists and is needed */
+@import './styles/themes.css';
 
-/* Your preferred theme structure with the adaptive border fix */
 :root {
   /* This is the DARK theme by default */
-  --primary-text-color: #e5e7eb;
+  --primary-text-color: #d1d5db;
+  /* Softer white for text */
   --secondary-text-color: #9ca3af;
+  /* Unchanged, good contrast */
   --background-color: #111827;
+  /* A deep navy blue for the base */
   --card-background-color: #1f2937;
+  /* A slightly lighter navy for panels */
   --border-color: #374151;
+  /* A subtle border color */
   --accent-color: #8b5cf6;
-
-  /* FIX: Adaptive border for the selected accent (Light color for dark theme) */
+  /* A vibrant purple for highlights */
   --accent-border-color: #e5e7eb;
 }
 
@@ -28,8 +32,6 @@
   --card-background-color: #ffffff;
   --border-color: #e5e7eb;
   --accent-color: #8b5cf6;
-
-  /* FIX: Adaptive border for the selected accent (Dark color for light theme) */
   --accent-border-color: #1f2937;
 }
 
@@ -39,47 +41,13 @@ body {
   color: var(--primary-text-color);
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
-/* Custom Toggle Switch for Modals */
-.toggle-switch {
-  --accent-color: #58a6ff; /* Default accent color */
-  position: relative;
-  display: inline-block;
-  width: 36px;
-  height: 20px;
-  background-color: var(--background);
-  border-radius: 9999px;
-  transition: background-color 0.2s ease-in-out;
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  -webkit-appearance: none;
-  appearance: none;
-}
-.toggle-switch::before {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  background-color: white;
-  border-radius: 9999px;
-  transition: transform 0.2s ease-in-out;
-}
-.toggle-switch:checked {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
-}
-.toggle-switch:checked::before {
-  transform: translateX(16px);
-}
-/* Add this to your src/index.css file */
 
-/* Hides the arrows on number inputs for a cleaner look */
 .no-spinner::-webkit-outer-spin-button,
 .no-spinner::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 .no-spinner {
   -moz-appearance: textfield;
   appearance: textfield;

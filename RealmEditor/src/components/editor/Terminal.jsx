@@ -1,40 +1,52 @@
-// src/components/editor/Terminal.jsx
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useImperativeHandle } from 'react';
 import { Terminal as XtermTerminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import 'xterm/css/xterm.css';
 
-export default function Terminal() {
-  const terminalRef = useRef(null);
+const Terminal = React.forwardRef((props, ref) => {
+    const terminalRef = React.useRef(null);
+    const term = React.useRef(null);
 
-  useEffect(() => {
-    if (!terminalRef.current || terminalRef.current.children.length > 0) {
-      return;
-    }
+    useImperativeHandle(ref, () => ({
+        writeln: (text) => {
+            if (term.current) {
+                term.current.writeln(text);
+            }
+        }
+    }));
 
-    const term = new XtermTerminal({
-      cursorBlink: true,
-      theme: {
-        background: '#202124',
-        foreground: '#d4d4d4',
-      },
-      fontFamily: 'monospace',
-    });
+    useEffect(() => {
+        if (!terminalRef.current || terminalRef.current.children.length > 0) {
+            return;
+        }
 
-    const fitAddon = new FitAddon();
-    term.loadAddon(fitAddon);
-    term.open(terminalRef.current);
-    fitAddon.fit();
-    term.write('Welcome to Realm Terminal!\r\n$ ');
+        term.current = new XtermTerminal({
+            cursorBlink: true,
+            theme: {
+                background: '#202124',
+                foreground: '#d4d4d4',
+            },
+            fontFamily: 'monospace',
+        });
 
-    term.onData(data => {
-      term.write(data);
-    });
+        const fitAddon = new FitAddon();
+        term.current.loadAddon(fitAddon);
+        term.current.open(terminalRef.current);
+        fitAddon.fit();
+        term.current.write('Welcome to Realm Terminal!\r\n$ ');
 
-    return () => {
-      term.dispose();
-    };
-  }, []);
+        term.current.onData(data => {
+            term.current.write(data);
+        });
 
-  return <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />;
-}
+        return () => {
+            if (term.current) {
+                term.current.dispose();
+            }
+        };
+    }, []);
+
+    return <div ref={terminalRef} style={{ width: '100%', height: '100%' }} />;
+});
+
+export default Terminal;

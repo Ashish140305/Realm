@@ -3,25 +3,45 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #202124;
+  background-color: #1e1e1e;
 }
+
 .terminal-tabs {
   display: flex;
-  background-color: #333;
-  height: 35px;
+  background-color: var(--background-color);
+  height: 40px;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
 }
+
 .terminal-tabs .tab {
-  padding: 0 1rem;
+  padding: 0 1.25rem;
   display: flex;
   align-items: center;
-  font-size: 0.9rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
   cursor: pointer;
+  color: var(--secondary-text-color);
+  border-right: 1px solid var(--border-color);
+  position: relative;
 }
+
 .terminal-tabs .tab.active {
-  background-color: #202124;
+  color: white;
+  background-color: #1e1e1e;
 }
+
+.terminal-tabs .tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent-color);
+}
+
 .terminal-wrapper {
   flex-grow: 1;
-  padding: 0.5rem;
+  padding: 0.5rem 1rem;
 }

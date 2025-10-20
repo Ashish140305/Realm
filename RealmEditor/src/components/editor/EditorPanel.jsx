@@ -1,32 +1,32 @@
-// src/components/editor/EditorPanel.jsx
 import React from 'react';
 import Editor from '@monaco-editor/react';
 import '../../styles/EditorPanel.css';
+import { getLanguageFromExtension } from '../../utils/languageUtils';
 
-export default function EditorPanel() {
-  const code = `// Welcome to Realm!
-function greet() {
-  console.log("Start coding...");
-}`;
+export default function EditorPanel({ activeFile, onCodeChange, editorRef }) {
 
-  return (
-    <div className="editor-panel">
-      <div className="editor-tabs">
-        <div className="tab active">Demo.java</div>
-        <div className="tab">App.py</div>
-        <div className="tab">Main.cpp</div>
-      </div>
-      <Editor
-        height="calc(100% - 35px)" // Adjust height to account for tabs
-        defaultLanguage="javascript"
-        defaultValue={code}
-        theme="vs-dark" // Changed to dark theme
-        options={{
-          minimap: { enabled: true },
-          fontSize: 14,
-          wordWrap: 'on',
-        }}
-      />
-    </div>
-  );
+    const handleEditorDidMount = (editor, monaco) => {
+        editorRef.current = editor;
+    };
+
+    return (
+        <div className="editor-panel">
+            <div className="editor-tabs">
+                {activeFile && <div className="tab active">{activeFile.name}</div>}
+            </div>
+            <Editor
+                height="calc(100% - 35px)"
+                language={activeFile ? getLanguageFromExtension(activeFile.name) : 'plaintext'}
+                value={activeFile ? activeFile.content : ''}
+                theme="vs-dark"
+                onMount={handleEditorDidMount}
+                onChange={onCodeChange}
+                options={{
+                    minimap: { enabled: true },
+                    fontSize: 14,
+                    wordWrap: 'on',
+                }}
+            />
+        </div>
+    );
 }

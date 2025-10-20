@@ -3,26 +3,41 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  background-color: #1e1e1e;
 }
 
 .editor-tabs {
   display: flex;
-  background-color: #252526;
-  height: 35px;
+  background-color: var(--background-color);
+  height: 40px;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tab {
-  padding: 0 1rem;
+  padding: 0 1.25rem;
   display: flex;
   align-items: center;
-  font-size: 0.9rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
   cursor: pointer;
-  border-right: 1px solid #1e1e1e;
-  color: #a0a0a0;
+  border-right: 1px solid var(--border-color);
+  color: var(--secondary-text-color);
+  background-color: transparent;
+  position: relative;
 }
 
 .tab.active {
   background-color: #1e1e1e;
-  color: #ffffff;
+  color: white;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent-color);
 }

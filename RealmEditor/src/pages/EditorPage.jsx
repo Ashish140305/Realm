@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import Editor from '@monaco-editor/react';
+import EditorPanel from '../components/editor/EditorPanel';
 import IconSidebar from '../components/layout/IconSidebar';
 import SidePanel from '../components/layout/SidePanel';
 import TopBar from '../components/editor/TopBar';
 import TerminalPanel from '../components/editor/TerminalPanel';
 import CollaborationModal from '../components/editor/CollaborationModal';
 import { supabase } from '../supabaseClient';
-import '../styles/EditorPage.css'; // Corrected Path
+import '../styles/EditorPage.css';
 
 export default function EditorPage() {
     const [activeIcon, setActiveIcon] = useState('files');
@@ -17,26 +17,70 @@ export default function EditorPage() {
     const sessionId = searchParams.get('session');
 
     const [isCollabModalOpen, setCollabModalOpen] = useState(false);
-    const [code, setCode] = useState(`// Welcome to Realm!\n// Session: ${sessionId || 'None'}\n\nfunction greet() {\n  console.log("Start coding...");\n}`);
     const editorRef = useRef(null);
+    const terminalRef = useRef(null);
     const channelRef = useRef(null);
 
+    const [files, setFiles] = useState([
+        { name: 'Demo.java', content: '// Welcome to Realm!\nfunction greet() {\n  console.log("Start coding...");\n}' },
+        { name: 'App.py', content: '# Your Python code here' },
+        { name: 'Main.cpp', content: '// Your C++ code here' }
+    ]);
+    const [activeFile, setActiveFile] = useState(files[0]);
+
+    const handleFileSelect = (file) => {
+        setActiveFile(file);
+    };
+
+    const handleAddFile = (fileName) => {
+        const newFile = { name: fileName, content: '' };
+        setFiles([...files, newFile]);
+        setActiveFile(newFile);
+    };
+
+    const handleCodeChange = (newCode) => {
+        const updatedFiles = files.map(file =>
+            file.name === activeFile.name ? { ...file, content: newCode } : file
+        );
+        setFiles(updatedFiles);
+        setActiveFile({ ...activeFile, content: newCode });
+
+        if (channelRef.current && sessionId) {
+            channelRef.current.send({
+                type: 'broadcast',
+                event: 'code-update',
+                payload: { code: newCode, fileName: activeFile.name },
+            });
+        }
+    };
+
+    const handleRunCode = () => {
+        if (terminalRef.current) {
+            terminalRef.current.writeln(`\n> Running ${activeFile.name}...`);
+            // This is a mock execution. A real implementation would
+            // send the code to a backend service for execution.
+            terminalRef.current.writeln(`> Code executed successfully.`);
+        }
+    };
+    
     useEffect(() => {
         if (!sessionId) return;
 
         const channel = supabase.channel(`session:${sessionId}`, {
             config: {
                 broadcast: {
-                    self: false, // Don't receive our own messages
+                    self: false, 
                 },
             },
         });
 
         channel
             .on('broadcast', { event: 'code-update' }, ({ payload }) => {
-                console.log('Received code update:', payload.code);
-                // To prevent an infinite loop, we only update if the content is different
-                if (editorRef.current && editorRef.current.getValue() !== payload.code) {
+                const updatedFiles = files.map(file =>
+                    file.name === payload.fileName ? { ...file, content: payload.code } : file
+                );
+                setFiles(updatedFiles);
+                if (activeFile.name === payload.fileName) {
                     editorRef.current.setValue(payload.code);
                 }
             })
@@ -48,61 +92,45 @@ export default function EditorPage() {
 
         channelRef.current = channel;
 
-        // Cleanup on component unmount
         return () => {
             if (channelRef.current) {
                 supabase.removeChannel(channelRef.current);
                 channelRef.current = null;
             }
         };
-    }, [sessionId]);
+    }, [sessionId, files, activeFile]);
 
-    const handleEditorDidMount = (editor, monaco) => {
-        editorRef.current = editor;
-    };
-
-    const handleEditorChange = (value) => {
-        setCode(value);
-        if (channelRef.current && sessionId) {
-            channelRef.current.send({
-                type: 'broadcast',
-                event: 'code-update',
-                payload: { code: value },
-            });
-        }
-    };
 
     return (
         <div className="editor-container">
-            <TopBar projectName={projectName} onCollaborateClick={() => setCollabModalOpen(true)} />
+            <TopBar 
+                onCollaborateClick={() => setCollabModalOpen(true)}
+                onRunCode={handleRunCode}
+            />
             <div className="main-workspace">
                 <IconSidebar activeIcon={activeIcon} setActiveIcon={setActiveIcon} />
 
                 <PanelGroup direction="horizontal">
                     <Panel defaultSize={20} minSize={15} maxSize={30}>
-                        <SidePanel activeIcon={activeIcon} projectName={projectName} />
+                        <SidePanel 
+                            files={files}
+                            onFileSelect={handleFileSelect}
+                            onAddFile={handleAddFile}
+                        />
                     </Panel>
                     <PanelResizeHandle className="resize-handle" />
                     <Panel>
                         <PanelGroup direction="vertical">
                             <Panel defaultSize={75} minSize={50}>
-                                <Editor
-                                    height="100%"
-                                    defaultLanguage="javascript"
-                                    value={code}
-                                    theme="vs-dark"
-                                    onMount={handleEditorDidMount}
-                                    onChange={handleEditorChange}
-                                    options={{
-                                        minimap: { enabled: true },
-                                        fontSize: 14,
-                                        wordWrap: 'on',
-                                    }}
+                                <EditorPanel
+                                    activeFile={activeFile}
+                                    onCodeChange={handleCodeChange}
+                                    editorRef={editorRef}
                                 />
                             </Panel>
                             <PanelResizeHandle className="resize-handle" />
                             <Panel defaultSize={25} minSize={10}>
-                                <TerminalPanel />
+                                <TerminalPanel terminalRef={terminalRef} />
                             </Panel>
                         </PanelGroup>
                     </Panel>
