@@ -1,9 +1,9 @@
-// src/components/editor/TerminalPanel.jsx
 import React from 'react';
 import Terminal from './Terminal';
 import "../../styles/TerminalPanel.css";
 
-export default function TerminalPanel() {
+// This component now accepts a 'terminalRef' to connect to its parent
+export default function TerminalPanel({ terminalRef }) {
   return (
     <div className="terminal-panel">
       <div className="terminal-tabs">
@@ -12,7 +12,8 @@ export default function TerminalPanel() {
         <div className="tab">Debug</div>
       </div>
       <div className="terminal-wrapper">
-        <Terminal />
+        {/* The ref is now passed to the Terminal component */}
+        <Terminal ref={terminalRef} />
       </div>
     </div>
   );

@@ -6,29 +6,32 @@ const useSettingsStore = create(
   persist(
     (set, get) => ({
       profile: {
-        name: 'Vedant',
-        username: 'vedant-d',
-        bio: 'Hello :D',
-        email: 'vedant@gmail.com',
+        name: '',
+        username: '',
+        bio: '',
+        email: '',
         avatar: null,
-        profession: 'Frontend Engineer',
-        company: 'Realm Corp',
+        profession: '',
+        company: '',
         socials: { 
-          github: 'vedantD13', 
-          linkedin: 'vedant-s', 
-          twitter: 'vedanttweets' 
+          github: '', 
+          linkedin: '', 
+          twitter: '' 
         },
       },
       theme: 'dark',
       accentColor: '#58a6ff',
       reduceMotion: false,
       status: null, 
-      starredItems: ['Socket-Server-Node'], 
+      starredItems: [],
+      onlineUsers: [], // Add this line
 
       // === CONTEXT HUB STATE ===
       workingContextHistory: [], // [{ text: 'Reviewing PR #45', date: Date.now() }, ...]
       pinnedTask: null, // { id: '45', type: 'PR', name: 'Fix Sidebar Bug' }
       // =============================
+
+      setOnlineUsers: (users) => set({ onlineUsers: users }), // Add this setter
 
       // Updated to be a generic toggle function
       toggleStarred: (itemId) => set((state) => {

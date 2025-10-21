@@ -3,10 +3,14 @@ import Editor from '@monaco-editor/react';
 import '../../styles/EditorPanel.css';
 import { getLanguageFromExtension } from '../../utils/languageUtils';
 
-export default function EditorPanel({ activeFile, onCodeChange, editorRef }) {
+// The component now accepts an 'onMount' function instead of 'editorRef'
+export default function EditorPanel({ activeFile, onCodeChange, onMount }) {
 
     const handleEditorDidMount = (editor, monaco) => {
-        editorRef.current = editor;
+        // This function now calls the onMount prop passed from the parent
+        if (onMount) {
+            onMount(editor, monaco);
+        }
     };
 
     return (

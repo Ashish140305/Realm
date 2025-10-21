@@ -1,12 +1,17 @@
 package com.realm.authservice.controller;
 
 import com.realm.authservice.model.CollaborationSession;
+import com.realm.authservice.model.Follow;
+import com.realm.authservice.model.User;
 import com.realm.authservice.repository.CollaborationSessionRepository;
+import com.realm.authservice.repository.FollowRepository;
+import com.realm.authservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/collaboration")
@@ -15,18 +20,41 @@ public class CollaborationController {
     @Autowired
     private CollaborationSessionRepository collaborationSessionRepository;
 
-    /**
-     * Creates a new collaboration session and returns its unique ID.
-     * The frontend will use this ID to create a real-time channel in Supabase.
-     * 
-     * @param userIds The list of users invited to the session.
-     * @return The newly created CollaborationSession object with its generated ID.
-     */
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private FollowRepository followRepository;
+
     @PostMapping("/start")
     public ResponseEntity<CollaborationSession> startSession(@RequestBody List<String> userIds) {
         CollaborationSession session = new CollaborationSession();
         session.setUserIds(userIds);
         CollaborationSession savedSession = collaborationSessionRepository.save(session);
         return ResponseEntity.ok(savedSession);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getUsers() {
+        return ResponseEntity.ok(userRepository.findAll());
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<List<User>> getFollowingUsers(@PathVariable String userId) {
+        User user = userRepository.findByUserId(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Follow> following = followRepository.findByFollower(user);
+        List<User> followingUsers = following.stream()
+                .map(Follow::getFollowing)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(followingUsers);
+    }
+
+    @GetMapping("/users/search")
+    public ResponseEntity<List<User>> searchUsers(@RequestParam String query) {
+        // Use the new repository method to filter users by the query
+        return ResponseEntity.ok(userRepository.findByUserIdContainingIgnoreCase(query));
     }
 }

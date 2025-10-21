@@ -11,11 +11,15 @@ import SignUpForm from './components/auth/SignUpForm';
 import OverviewPage from './pages/OverviewPage';
 import EditorPage from './pages/EditorPage';
 import ThemeManager from './components/ui/ThemeManager';
+import SessionNotification from './components/overview/SessionNotification';
+import PresenceTracker from './components/ui/PresenceTracker';
 
 export default function App() {
   return (
     <Router>
       <ThemeManager />
+      <PresenceTracker />
+      <SessionNotification />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route element={<AuthPage />}>

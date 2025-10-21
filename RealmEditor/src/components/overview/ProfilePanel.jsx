@@ -1,31 +1,22 @@
 // src/components/overview/ProfilePanel.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Icons
 import { Briefcase, Mail, Github, Linkedin, Twitter, UserPlus, Share2, Users, Edit, Search, X } from 'lucide-react'; 
 import useSettingsStore from '../../store/useSettingsStore';
+import { supabase } from '../../supabaseClient';
+
 
 // --- MOCK DATA (Required for the Modal to function) ---
 const MOCK_FOLLOWING_COUNT = 12;
 const MOCK_FOLLOWERS_COUNT = 8;
-const MOCK_LIST_DATA = {
-    followers: [
-        { id: 1, name: 'Alice Smith', username: 'alice.s', title: 'Senior Engineer' },
-        { id: 2, name: 'Bob Johnson', username: 'bob.j', title: 'Product Manager' },
-        { id: 3, name: 'Diana Prince', username: 'diana.p', title: 'QA Specialist' },
-    ],
-    following: [
-        { id: 6, name: 'Greg House', username: 'greg.h', title: 'CTO, Tech Solutions' },
-        { id: 7, name: 'Hannah Lee', username: 'hannah.l', title: 'Lead Architect' },
-        { id: 8, name: 'Isaac Newton', username: 'isaac.n', title: 'Data Scientist' },
-    ],
-};
+
 
 // --- UTILITY COMPONENTS (Defined here to resolve ReferenceError) ---
 
 // Profile Card Sub-Component (Used by the Modal)
-const ProfileCard = ({ user, type, accentColor }) => {
-    const actionText = type === 'followers' ? 'Remove' : 'Unfollow';
+const ProfileCard = ({ user, type, accentColor, onFollow }) => {
+    const actionText = type === 'followers' ? 'Remove' : 'Follow';
     const actionColor = type === 'followers' ? 'text-red-400' : 'text-text-secondary';
     
     const handleProfileClick = () => {
@@ -50,14 +41,14 @@ const ProfileCard = ({ user, type, accentColor }) => {
                     className="w-10 h-10 rounded-full object-cover transition-opacity duration-200 group-hover:opacity-90" 
                 />
                 <div>
-                    <span className="text-sm font-semibold text-text-primary block transition-colors duration-200 group-hover:text-accent">{user.name}</span>
+                    <span className="text-sm font-semibold text-text-primary block transition-colors duration-200 group-hover:text-accent">{user.userId}</span>
                     <span className="text-xs text-text-secondary block truncate">{user.title || `@${user.username}`}</span>
                 </div>
             </div>
 
             <button 
                 className={`text-xs px-3 py-1 font-medium rounded-full border border-border-color ${actionColor} hover:bg-hover-color transition-colors`}
-                onClick={() => console.log(`[ACTION]: ${actionText} ${user.name}`)}
+                onClick={() => onFollow(user.id)}
             >
                 {actionText}
             </button>
@@ -67,17 +58,50 @@ const ProfileCard = ({ user, type, accentColor }) => {
 
 
 // FOLLOW LIST MODAL COMPONENT (Isolated Window)
-const FollowListModal = ({ isOpen, onClose, initialTab, accentColor }) => {
-    const mockData = MOCK_LIST_DATA; 
+const FollowListModal = ({ isOpen, onClose, initialTab, accentColor, searchResults, onSearchChange, onFollow }) => {
     const [activeTab, setActiveTab] = useState(initialTab || 'following');
-    const listData = activeTab === 'followers' ? mockData.followers : mockData.following;
+    const [listData, setListData] = useState([]);
 
-    const getTabClass = (tabName) => 
-        `flex-1 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 ${
-            activeTab === tabName 
-                ? 'bg-accent text-white shadow-md' 
-                : 'text-text-secondary hover:bg-background'
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            if (activeTab === 'following') {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const response = await fetch(`/api/collaboration/users/${user.user_metadata.username}`);
+                    if (response.ok) {
+                        const users = await response.json();
+                        setListData(users);
+                    }
+                }
+            } else {
+                setListData(searchResults);
+            }
+        };
+        if (isOpen) {
+            fetchUsers();
+        }
+
+        const channel = supabase.channel('profile-updates');
+        const subscription = channel.on('broadcast', { event: 'user-updated' }, () => {
+            if (isOpen) {
+                fetchUsers();
+            }
+        }).subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [isOpen, activeTab, searchResults]);
+
+
+    const getTabClass = (tabName) =>
+        `flex-1 py-2 text-sm font-semibold rounded-lg transition-colors duration-200 ${activeTab === tabName
+            ? 'bg-accent text-white shadow-md'
+            : 'text-text-secondary hover:bg-background'
         }`;
+
+    const displayData = listData;
 
     return (
         <AnimatePresence>
@@ -94,9 +118,9 @@ const FollowListModal = ({ isOpen, onClose, initialTab, accentColor }) => {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.85, opacity: 0 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        
+
                         className="bg-card-background border border-border-color rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col"
-                        onClick={(e) => e.stopPropagation()} 
+                        onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
                         <div className="p-5 border-b border-border-color flex justify-between items-center flex-shrink-0">
@@ -113,24 +137,40 @@ const FollowListModal = ({ isOpen, onClose, initialTab, accentColor }) => {
                         <div className="p-4 border-b border-border-color flex-shrink-0">
                             <div className="flex bg-background rounded-lg p-1 space-x-1">
                                 <motion.button
+                                    onClick={() => setActiveTab('search')}
+                                    className={getTabClass('search')}
+                                    style={activeTab === 'search' ? { backgroundColor: accentColor } : {}}
+                                >
+                                    Search
+                                </motion.button>
+                                <motion.button
                                     onClick={() => setActiveTab('following')}
                                     className={getTabClass('following')}
                                     style={activeTab === 'following' ? { backgroundColor: accentColor } : {}}
                                 >
-                                    Following ({mockData.following.length})
+                                    Following ({listData.length})
                                 </motion.button>
                                 <motion.button
                                     onClick={() => setActiveTab('followers')}
                                     className={getTabClass('followers')}
                                     style={activeTab === 'followers' ? { backgroundColor: accentColor } : {}}
                                 >
-                                    Followers ({mockData.followers.length})
+                                    Followers ({MOCK_FOLLOWERS_COUNT})
                                 </motion.button>
                             </div>
                         </div>
 
                         {/* Content Panel (Scrollable Area) */}
                         <div className="flex-grow overflow-y-auto p-5 space-y-4">
+                            {activeTab === 'search' && <div className="relative mb-6 mt-4">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                                <input
+                                    type="text"
+                                    placeholder="Search accounts to follow..."
+                                    className="w-full pl-9 pr-3 py-2 bg-background border border-border-color rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent text-text-primary"
+                                    onChange={onSearchChange}
+                                />
+                            </div>}
                             <AnimatePresence mode="wait">
                                 <motion.div
                                     key={activeTab}
@@ -140,17 +180,18 @@ const FollowListModal = ({ isOpen, onClose, initialTab, accentColor }) => {
                                     transition={{ duration: 0.2 }}
                                     className="space-y-4"
                                 >
-                                    {listData.length > 0 ? (
-                                        listData.map(user => (
-                                            <ProfileCard 
-                                                key={user.id} 
-                                                user={user} 
+                                    {displayData.length > 0 ? (
+                                        displayData.map(user => (
+                                            <ProfileCard
+                                                key={user.id}
+                                                user={user}
                                                 type={activeTab}
-                                                accentColor={accentColor} 
+                                                accentColor={accentColor}
+                                                onFollow={onFollow}
                                             />
                                         ))
                                     ) : (
-                                        <p className="text-center text-text-secondary py-10 text-md">No one is here yet! Start connecting.</p>
+                                        <p className="text-center text-text-secondary py-10 text-md">No users found.</p>
                                     )}
                                 </motion.div>
                             </AnimatePresence>
@@ -183,9 +224,9 @@ const ContactSection = ({ profile, accentColor }) => (
         <h3 className="text-sm font-semibold text-text-primary mb-3">Email Address</h3>
         <div className="flex items-center space-x-4 pl-6">
             <Mail size={16} className="text-text-secondary" />
-            <a href={`mailto:${profile.email}`} 
-               className="text-base font-semibold hover:underline transition-colors"
-               style={{ color: accentColor }}
+            <a href={`mailto:${profile.email}`}
+                className="text-base font-semibold hover:underline transition-colors"
+                style={{ color: accentColor }}
             >
                 {profile.email || 'Email Not Set'}
             </a>
@@ -198,9 +239,9 @@ const SocialSection = ({ socials, accentColor }) => {
     const SocialLink = ({ icon: Icon, username, baseLink }) => {
         if (!username) return null;
         return (
-            <a 
-                href={baseLink + username} 
-                target="_blank" 
+            <a
+                href={baseLink + username}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center space-x-2 text-text-secondary hover:text-text-primary transition-colors duration-200 group"
             >
@@ -227,168 +268,189 @@ const SocialSection = ({ socials, accentColor }) => {
 
 
 export default function ProfilePanel({ onEditProfileClick }) {
-  const { profile, accentColor } = useSettingsStore((state) => ({
-      profile: state.profile,
-      accentColor: state.accentColor,
-  }));
+    const { profile, accentColor } = useSettingsStore((state) => ({
+        profile: state.profile,
+        accentColor: state.accentColor,
+    }));
 
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isFollowListModalOpen, setIsFollowListModalOpen] = useState(false);
-  const [currentListType, setCurrentListType] = useState('followers'); 
-  
-  const handleFollowToggle = () => {
-      setIsFollowing(p => !p);
-  };
-  
-  // Handlers for opening the new Follower/Following Window - FIXED
-  const onViewNetworkClick = (type) => {
-      setCurrentListType(type);
-      setIsFollowListModalOpen(true); 
-  }
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [isFollowListModalOpen, setIsFollowListModalOpen] = useState(false);
+    const [currentListType, setCurrentListType] = useState('followers');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
-  const followButtonClasses = isFollowing
-    ? "bg-transparent text-text-primary border border-border-color hover:bg-hover-color" 
-    : "bg-accent text-white border border-accent hover:bg-accent-hover"; 
+    const handleSearchChange = async (e) => {
+        const query = e.target.value;
+        setSearchTerm(query);
+        if (query.length > 0) {
+            const response = await fetch(`/api/collaboration/users/search?query=${query}`);
+            if (response.ok) {
+                const users = await response.json();
+                setSearchResults(users.filter(user => user.userId !== profile.username));
+            }
+        } else {
+            setSearchResults([]);
+        }
+    };
 
-  return (
-    <React.Fragment> 
-      <motion.div
-        className="sticky top-24"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-      >
-        {/* Profile Card - Network Hub */}
-        <div className="p-6 bg-card-background rounded-xl shadow-lg mb-6">
-          
-          {/* AVATAR HERO BLOCK */}
-          <div className="relative w-32 h-32 mx-auto mb-4"> 
-            <img
-              src={profile.avatar || `https://ui-avatars.com/api/?name=${profile.name}&background=random`}
-              alt="Profile Avatar"
-              className="w-full h-full rounded-full object-cover border-4 border-accent transition-all duration-300" 
-            />
-            
-            <div 
-              className="absolute -top-1 -right-1 p-2 rounded-full bg-card-background border border-border-color transition-all duration-300 cursor-pointer" 
-              onClick={onEditProfileClick}
-              title="Edit Profile"
-              style={{ color: accentColor }}
+    const handleFollow = async (followingId) => {
+        const response = await fetch('/api/collaboration/follow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ followerId: profile.username, followingId }),
+        });
+        if (response.ok) {
+            alert("Followed!");
+        }
+    };
+
+
+    // Handlers for opening the new Follower/Following Window - FIXED
+    const onViewNetworkClick = (type) => {
+        setCurrentListType(type);
+        setIsFollowListModalOpen(true);
+    }
+
+    const followButtonClasses = isFollowing
+        ? "bg-transparent text-text-primary border border-border-color hover:bg-hover-color"
+        : "bg-accent text-white border border-accent hover:bg-accent-hover";
+
+    return (
+        <React.Fragment>
+            <motion.div
+                className="sticky top-24"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
             >
-              <Edit size={16} />
-            </div>
-          </div>
+                {/* Profile Card - Network Hub */}
+                <div className="p-6 bg-card-background rounded-xl shadow-lg mb-6">
 
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-text-primary tracking-wide truncate">{profile.name || 'Your Name'}</h1>
-            <p className="text-md text-text-secondary mb-3">@{profile.username || 'username'}</p>
-            {/* Bio with correct spacing */}
-            <p className="text-sm text-text-primary break-words mb-4">{profile.bio || 'Your bio goes here.'}</p>
-          </div>
-          
-          {/* --- SEARCH BAR (FIXED POSITIONING) --- */}
-          <div className="relative mb-6 mt-4"> 
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
-               <input 
-                   type="text" 
-                   placeholder="Search accounts to follow..." 
-                   className="w-full pl-9 pr-3 py-2 bg-background border border-border-color rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent text-text-primary" 
-               />
-          </div>
+                    {/* AVATAR HERO BLOCK */}
+                    <div className="relative w-32 h-32 mx-auto mb-4">
+                        <img
+                            src={profile.avatar || `https://ui-avatars.com/api/?name=${profile.name}&background=random`}
+                            alt="Profile Avatar"
+                            className="w-full h-full rounded-full object-cover border-4 border-accent transition-all duration-300"
+                        />
 
-          {/* --- FOLLOW / FOLLOWING METRICS (FIXED LOGIC) --- */}
-          <div className="flex justify-center items-center my-4 py-3">
-              
-              {/* Followers Button/Text - Clicks trigger onViewNetworkClick */}
-              <button 
-                  onClick={() => onViewNetworkClick('followers')} 
-                  className="group flex items-baseline hover:text-accent transition-colors focus:outline-none"
-              >
-                  <span className="text-lg font-extrabold text-text-primary group-hover:text-accent transition-colors mr-1">
-                      {MOCK_FOLLOWERS_COUNT}
-                  </span>
-                  <span className="text-sm text-text-secondary font-medium group-hover:text-accent transition-colors">
-                      Followers
-                  </span>
-              </button>
+                        <div
+                            className="absolute -top-1 -right-1 p-2 rounded-full bg-card-background border border-border-color transition-all duration-300 cursor-pointer"
+                            onClick={onEditProfileClick}
+                            title="Edit Profile"
+                            style={{ color: accentColor }}
+                        >
+                            <Edit size={16} />
+                        </div>
+                    </div>
 
-              <span className="text-text-secondary text-base font-light mx-2">·</span>
+                    <div className="text-center">
+                        <h1 className="text-2xl font-bold text-text-primary tracking-wide truncate">{profile.name || 'Your Name'}</h1>
+                        <p className="text-md text-text-secondary mb-3">@{profile.username || 'username'}</p>
+                        {/* Bio with correct spacing */}
+                        <p className="text-sm text-text-primary break-words mb-4">{profile.bio || 'Your bio goes here.'}</p>
+                    </div>
 
-              {/* Following Button/Text - Clicks trigger onViewNetworkClick */}
-              <button 
-                  onClick={() => onViewNetworkClick('following')} 
-                  className="group flex items-baseline hover:text-accent transition-colors focus:outline-none"
-              >
-                  <span className="text-lg font-extrabold text-text-primary group-hover:text-accent transition-colors mr-1">
-                      {MOCK_FOLLOWING_COUNT}
-                  </span>
-                  <span className="text-sm text-text-secondary font-medium group-hover:text-accent transition-colors">
-                      Following
-                  </span>
-              </button>
-              
-          </div>
-          
-          {/* FOLLOW BUTTON */}
-          <div className="flex space-x-3 mt-6">
-              <motion.button
-                onClick={() => setIsFollowing(p => !p)} 
-                className={`flex-grow py-2 px-4 font-semibold rounded-lg transition-colors duration-200 ${followButtonClasses}`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {isFollowing ? (
-                    <span className="flex items-center justify-center space-x-2">
-                      <Users size={18} /> <span>Following</span>
-                    </span>
-                ) : (
-                    <span className="flex items-center justify-center space-x-2">
-                      <UserPlus size={18} /> <span>Follow</span>
-                    </span>
-                )}
-              </motion.button>
-              
-              <button 
-                  className="p-2.5 rounded-lg border border-border-color text-text-secondary hover:bg-hover-color transition-colors"
-                  onClick={() => console.log('Share Profile')}
-              >
-                  <Share2 size={20} />
-              </button>
-          </div>
-        </div>
+                    {/* --- SEARCH BAR (FIXED POSITIONING) --- */}
+                    <div className="relative mb-6 mt-4">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
+                        <input
+                            type="text"
+                            placeholder="Search accounts to follow..."
+                            className="w-full pl-9 pr-3 py-2 bg-background border border-border-color rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent text-text-primary"
+                            onChange={handleSearchChange}
+                        />
+                    </div>
 
-        {/* DETAILS SECTION - REDESIGNED */}
-        <div className="p-6 bg-card-background rounded-xl shadow-lg">
-          
-          {/* Section 1: Professional / Company Info */}
-          <ProfessionalSection 
-            icon={Briefcase} 
-            profile={profile}
-          />
-          
-          {/* Section 2: Email Info (Simplified) */}
-          <ContactSection 
-            profile={profile}
-            accentColor={accentColor}
-          />
+                    {/* --- FOLLOW / FOLLOWING METRICS (FIXED LOGIC) --- */}
+                    <div className="flex justify-center items-center my-4 py-3">
 
-          {/* Section 3: Social Links */}
-          <SocialSection 
-            socials={profile.socials}
-            accentColor={accentColor}
-          />
-          
-        </div>
-      </motion.div>
-      
-      {/* RENDER THE ISOLATED FOLLOW LIST WINDOW */}
-      <FollowListModal 
-          isOpen={isFollowListModalOpen} 
-          onClose={() => setIsFollowListModalOpen(false)} 
-          initialTab={currentListType}
-          accentColor={accentColor}
-          mockData={MOCK_LIST_DATA} 
-      />
-    </React.Fragment>
-  );
+                        {/* Followers Button/Text - Clicks trigger onViewNetworkClick */}
+                        <button
+                            onClick={() => onViewNetworkClick('followers')}
+                            className="group flex items-baseline hover:text-accent transition-colors focus:outline-none"
+                        >
+                            <span className="text-lg font-extrabold text-text-primary group-hover:text-accent transition-colors mr-1">
+                                {MOCK_FOLLOWERS_COUNT}
+                            </span>
+                            <span className="text-sm text-text-secondary font-medium group-hover:text-accent transition-colors">
+                                Followers
+                            </span>
+                        </button>
+
+                        <span className="text-text-secondary text-base font-light mx-2">·</span>
+
+                        {/* Following Button/Text - Clicks trigger onViewNetworkClick */}
+                        <button
+                            onClick={() => onViewNetworkClick('following')}
+                            className="group flex items-baseline hover:text-accent transition-colors focus:outline-none"
+                        >
+                            <span className="text-lg font-extrabold text-text-primary group-hover:text-accent transition-colors mr-1">
+                                {MOCK_FOLLOWING_COUNT}
+                            </span>
+                            <span className="text-sm text-text-secondary font-medium group-hover:text-accent transition-colors">
+                                Following
+                            </span>
+                        </button>
+
+                    </div>
+
+                    {/* FOLLOW BUTTON */}
+                    <div className="flex space-x-3 mt-6">
+                        <motion.button
+                            onClick={() => setIsFollowListModalOpen(true)}
+                            className={`flex-grow py-2 px-4 font-semibold rounded-lg transition-colors duration-200 ${followButtonClasses}`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <span className="flex items-center justify-center space-x-2">
+                                <UserPlus size={18} /> <span>Follow</span>
+                            </span>
+                        </motion.button>
+
+                        <button
+                            className="p-2.5 rounded-lg border border-border-color text-text-secondary hover:bg-hover-color transition-colors"
+                            onClick={() => console.log('Share Profile')}
+                        >
+                            <Share2 size={20} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* DETAILS SECTION - REDESIGNED */}
+                <div className="p-6 bg-card-background rounded-xl shadow-lg">
+
+                    {/* Section 1: Professional / Company Info */}
+                    <ProfessionalSection
+                        icon={Briefcase}
+                        profile={profile}
+                    />
+
+                    {/* Section 2: Email Info (Simplified) */}
+                    <ContactSection
+                        profile={profile}
+                        accentColor={accentColor}
+                    />
+
+                    {/* Section 3: Social Links */}
+                    <SocialSection
+                        socials={profile.socials}
+                        accentColor={accentColor}
+                    />
+
+                </div>
+            </motion.div>
+
+            {/* RENDER THE ISOLATED FOLLOW LIST WINDOW */}
+            <FollowListModal
+                isOpen={isFollowListModalOpen}
+                onClose={() => setIsFollowListModalOpen(false)}
+                initialTab={currentListType}
+                accentColor={accentColor}
+                searchResults={searchResults}
+                onSearchChange={handleSearchChange}
+                onFollow={handleFollow}
+            />
+        </React.Fragment>
+    );
 }

@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
+import useSettingsStore from '../../store/useSettingsStore';
 import '../../styles/CollaborationModal.css';
 
 const CollaborationModal = ({ onClose, projectName }) => {
     const navigate = useNavigate();
-    const [users, setUsers] = useState([
-        { id: 'Alice', name: 'Alice', online: true },
-        { id: 'Bob', name: 'Bob', online: true },
-        { id: 'Charlie', name: 'Charlie', online: false },
-    ]);
+    const { profile, onlineUsers: onlineUserList } = useSettingsStore();
+    const [users, setUsers] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState([]);
+
+    const onlineUsers = new Set(onlineUserList);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const response = await fetch(`/api/collaboration/users`);
+            if (response.ok) {
+                const allUsers = await response.json();
+                const otherUsers = allUsers.filter(user => user.userId !== profile.username);
+                setUsers(otherUsers);
+            }
+        };
+
+        fetchUsers();
+    }, [profile.username]);
 
     const handleUserSelect = (userId) => {
         setSelectedUsers(prev =>
@@ -29,10 +43,18 @@ const CollaborationModal = ({ onClose, projectName }) => {
 
             if (response.ok) {
                 const session = await response.json();
-                console.log('Collaboration session started:', session.id);
-                // Navigate to the editor with the session ID in the URL
-                navigate(`/editor/${projectName}?session=${session.id}`);
-                onClose();
+                const channel = supabase.channel(`session:${session.id}`);
+                channel.subscribe(async (status) => {
+                    if (status === 'SUBSCRIBED') {
+                        await channel.send({
+                            type: 'broadcast',
+                            event: 'session-start',
+                            payload: { message: `Session started for project ${projectName}` },
+                        });
+                        navigate(`/editor/${projectName}?session=${session.id}`);
+                        onClose();
+                    }
+                });
             } else {
                 console.error('Failed to start collaboration session');
             }
@@ -51,16 +73,19 @@ const CollaborationModal = ({ onClose, projectName }) => {
                 <div className="modal-body">
                     <p>Select users to collaborate with:</p>
                     <div className="user-list">
-                        {users.map(user => (
-                            <div
-                                key={user.id}
-                                className={`user-item ${selectedUsers.includes(user.id) ? 'selected' : ''} ${!user.online ? 'offline' : ''}`}
-                                onClick={() => user.online && handleUserSelect(user.id)}
-                            >
-                                {user.name}
-                                <span className={`status-dot ${user.online ? 'online' : 'offline'}`}></span>
-                            </div>
-                        ))}
+                        {users.map(user => {
+                            const isOnline = onlineUsers.has(user.userId);
+                            return (
+                                <div
+                                    key={user.id}
+                                    className={`user-item ${selectedUsers.includes(user.userId) ? 'selected' : ''} ${!isOnline ? 'offline' : ''}`}
+                                    onClick={() => isOnline && handleUserSelect(user.userId)}
+                                >
+                                    {user.userId}
+                                    <span className={`status-dot ${isOnline ? 'online' : 'offline'}`}></span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
                 <div className="modal-footer">

@@ -3,12 +3,14 @@ import { useOutletContext } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 import { FaMicrosoft, FaApple, FaUser, FaLock } from 'react-icons/fa';
 import RealmLogo from '../../assets/RealmLogo';
+import useSettingsStore from '../../store/useSettingsStore';
 
 export default function LoginForm() {
     const handleNavigate = useOutletContext();
     const [userId, setUserId] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const { updateProfile } = useSettingsStore();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -20,15 +22,21 @@ export default function LoginForm() {
         }
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/login', {
+            const response = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, password }),
             });
 
             if (response.ok) {
-                // On successful login, navigate to the overview page
-                handleNavigate('/overview');
+                const profileResponse = await fetch(`/api/profile/${userId}`);
+                if (profileResponse.ok) {
+                    const profileData = await profileResponse.json();
+                    updateProfile(profileData);
+                    handleNavigate('/overview');
+                } else {
+                    setError('Could not fetch profile.');
+                }
             } else {
                 const errorMessage = await response.text();
                 setError(errorMessage || 'Login failed. Please check your credentials.');

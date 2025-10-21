@@ -52,3 +52,52 @@ body {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* Add these styles for remote cursors */
+.remote-cursor {
+  position: absolute;
+  background-color: rgba(239, 68, 68, 0.7);
+  /* A semi-transparent red */
+  width: 2px !important;
+  z-index: 10;
+}
+
+.remote-cursor-label {
+  position: absolute;
+  background-color: #ef4444;
+  color: white;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  transform: translateY(-100%);
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Add these styles for remote cursors */
+.remote-cursor {
+  position: absolute;
+  background-color: rgba(239, 68, 68, 0.7);
+  /* A semi-transparent red */
+  width: 2px !important;
+  z-index: 10;
+}
+
+.remote-cursor-label {
+  position: absolute;
+  background-color: #ef4444;
+  color: white;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  transform: translateY(-100%);
+  white-space: nowrap;
+  opacity: 0.8;
+}

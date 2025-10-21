@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import { X, UploadCloud } from 'lucide-react';
 import useSettingsStore from '../../store/useSettingsStore';
+import { supabase } from '../../supabaseClient';
 import { toast } from 'react-toastify';
 
 const FloatingLabelInput = ({ label, name, value, onChange, type = 'text' }) => (
@@ -72,6 +73,15 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
 
       if (response.ok) {
         updateProfile(formData); // Update local state in Zustand
+
+        // Broadcast the update to other users
+        const channel = supabase.channel('profile-updates');
+        await channel.send({
+            type: 'broadcast',
+            event: 'user-updated',
+            payload: { username: profile.username }
+        });
+
         toast.success("Profile updated successfully!");
         onClose();
       } else {
@@ -121,7 +131,7 @@ export default function ProfileEditorModal({ isVisible, onClose }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Corrected name and value for Full Name */}
-                <FloatingLabelInput label="Full Name" name="fullName" value={formData.fullName} onChange={handleInputChange} />
+                <FloatingLabelInput label="Full Name" name="name" value={formData.name} onChange={handleInputChange} />
                 <FloatingLabelInput label="Username" name="username" value={formData.username} onChange={handleInputChange} />
                 <FloatingLabelInput label="Profession" name="profession" value={formData.profession} onChange={handleInputChange} />
                 <FloatingLabelInput label="Company" name="company" value={formData.company} onChange={handleInputChange} />
