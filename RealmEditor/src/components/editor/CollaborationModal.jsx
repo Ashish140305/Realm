@@ -36,23 +36,15 @@ const CollaborationModal = ({ onClose, projectName }) => {
             const response = await fetch('/api/collaboration/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(selectedUsers),
+                // Add the current user to the session
+                body: JSON.stringify([profile.username, ...selectedUsers]),
             });
 
             if (response.ok) {
                 const session = await response.json();
-                const channel = supabase.channel(`session:${session.id}`);
-                channel.subscribe(async (status) => {
-                    if (status === 'SUBSCRIBED') {
-                        await channel.send({
-                            type: 'broadcast',
-                            event: 'session-start',
-                            payload: { message: `Session started for project ${projectName}` },
-                        });
-                        navigate(`/editor/${projectName}?session=${session.id}`);
-                        onClose();
-                    }
-                });
+                // Just navigate. The EditorPage will handle the subscription.
+                navigate(`/editor/${projectName}?session=${session.id}`);
+                onClose();
             } else {
                 console.error('Failed to start collaboration session');
             }

@@ -32,9 +32,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(toH2Console()).permitAll()
-                        // This is the key change to fix the 403 Forbidden error
-                        // We explicitly permit all collaboration and auth endpoints
-                        .requestMatchers("/api/auth/**", "/api/collaboration/**").permitAll()
+                        // Add "/api/profile/**" to the list of permitted endpoints
+                        .requestMatchers("/api/auth/**", "/api/collaboration/**", "/api/profile/**", "/api/projects/**")
+                        .permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin()));

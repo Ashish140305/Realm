@@ -24,6 +24,10 @@ export default function EditorPage() {
     const editorRef = useRef(null);
     const terminalRef = useRef(null);
     const channelRef = useRef(null);
+    const activeFileRef = useRef(null);
+    
+    // **FIX PART 1: Add a ref to track remote changes.**
+    const isApplyingRemoteChange = useRef(false);
 
     const [files, setFiles] = useState([
         { name: 'Demo.java', content: '// Welcome to Realm!\nfunction greet() {\n  console.log("Start coding...");\n}' },
@@ -31,6 +35,10 @@ export default function EditorPage() {
         { name: 'Main.cpp', content: '// Your C++ code here' }
     ]);
     const [activeFile, setActiveFile] = useState(files[0]);
+
+    useEffect(() => {
+        activeFileRef.current = activeFile;
+    }, [activeFile]);
 
     const handleLayout = useCallback(() => {
         if (editorRef.current) {
@@ -49,25 +57,38 @@ export default function EditorPage() {
     };
 
     const handleCodeChange = useCallback((newCode) => {
-        setFiles(currentFiles =>
-            currentFiles.map(file =>
-                file.name === activeFile.name ? { ...file, content: newCode } : file
-            )
-        );
-        setActiveFile(currentActiveFile => ({ ...currentActiveFile, content: newCode }));
+        const currentActiveFile = activeFileRef.current;
+        if (currentActiveFile) {
+            // This function is the single source of truth for updating React state
+            setFiles(currentFiles =>
+                currentFiles.map(file =>
+                    file.name === currentActiveFile.name ? { ...file, content: newCode } : file
+                )
+            );
+            setActiveFile({ ...currentActiveFile, content: newCode });
 
-        if (channelRef.current && sessionId) {
-            channelRef.current.send({
-                type: 'broadcast',
-                event: 'code-update',
-                payload: { code: newCode, fileName: activeFile.name },
-            });
+            // **FIX PART 2: Only broadcast if the change was made locally.**
+            if (isApplyingRemoteChange.current) {
+                return; // Do not broadcast if this change came from a remote user
+            }
+
+            if (channelRef.current && sessionId) {
+                channelRef.current.send({
+                    type: 'broadcast',
+                    event: 'code-update',
+                    payload: {
+                        code: newCode,
+                        fileName: currentActiveFile.name,
+                        senderId: profile.username
+                    },
+                });
+            }
         }
-    }, [activeFile, sessionId]);
+    }, [sessionId, profile.username]);
 
     const handleRunCode = () => {
-        if (terminalRef.current) {
-            terminalRef.current.writeln(`\n> Running ${activeFile.name}...`);
+        if (terminalRef.current && activeFileRef.current) {
+            terminalRef.current.writeln(`\n> Running ${activeFileRef.current.name}...`);
             terminalRef.current.writeln(`> Code executed successfully.`);
         }
     };
@@ -79,17 +100,25 @@ export default function EditorPage() {
         channelRef.current = channel;
 
         const handleRemoteUpdate = (payload) => {
-            if (editorRef.current && payload.fileName === activeFile?.name) {
+            if (payload.senderId === profile.username) {
+                return;
+            }
+
+            if (editorRef.current && payload.fileName === activeFileRef.current?.name) {
                 const editor = editorRef.current;
                 const model = editor.getModel();
                 if (model && model.getValue() !== payload.code) {
+                    // **FIX PART 3: Set the flag before applying the remote change.**
+                    isApplyingRemoteChange.current = true;
                     editor.executeEdits('remote', [{ range: model.getFullModelRange(), text: payload.code }]);
+                    // **FIX PART 4: Unset the flag after the change is applied.**
+                    isApplyingRemoteChange.current = false;
                 }
             }
         };
-        
+
         channel
-            .on('broadcast', { event: 'code-update' }, (payload) => handleRemoteUpdate(payload.payload))
+            .on('broadcast', { event: 'code-update' }, ({ payload }) => handleRemoteUpdate(payload))
             .on('broadcast', { event: 'session-end' }, () => {
                 alert('The collaboration session has ended.');
                 navigate(`/editor/${projectName}`);
@@ -100,9 +129,14 @@ export default function EditorPage() {
             supabase.removeChannel(channel);
             channelRef.current = null;
         };
-    }, [sessionId, activeFile, navigate, projectName]);
+    }, [sessionId, navigate, projectName, profile.username]);
+
+    const handleEditorMount = (editor) => {
+        editorRef.current = editor;
+    };
 
     return (
+        // The JSX for your component remains unchanged...
         <div className="editor-container">
             <TopBar onCollaborateClick={() => setCollabModalOpen(true)} onRunCode={handleRunCode} />
             <div className="main-workspace">
@@ -116,10 +150,9 @@ export default function EditorPage() {
                         <PanelGroup direction="vertical" onLayout={handleLayout}>
                             <Panel defaultSize={75} minSize={50}>
                                 <EditorPanel
-                                    key={activeFile.name}
                                     activeFile={activeFile}
                                     onCodeChange={handleCodeChange}
-                                    editorRef={editorRef}
+                                    onMount={handleEditorMount}
                                 />
                             </Panel>
                             <PanelResizeHandle className="resize-handle" />
