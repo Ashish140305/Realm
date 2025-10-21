@@ -20,7 +20,7 @@ export default function SignUpForm() {
         }
 
         try {
-            const response = await fetch('http://localhost:8080/api/auth/register', {
+            const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, email, password }),
@@ -30,11 +30,16 @@ export default function SignUpForm() {
                 // On successful registration, navigate to the login page
                 handleNavigate('/login');
             } else {
-                const errorMessage = await response.text();
-                setError(errorMessage || 'Registration failed. Please try again.');
+                 // FIX: Better error handling for server errors
+                if (response.status >= 500) {
+                    setError('Server error. Please try again later.');
+                } else {
+                    const errorMessage = await response.text();
+                    setError(errorMessage || 'Registration failed. Please try again.');
+                }
             }
         } catch (err) {
-            setError('Could not connect to the server. Please try again later.');
+            setError('Could not connect to the server. Please check the backend console.');
         }
     };
 

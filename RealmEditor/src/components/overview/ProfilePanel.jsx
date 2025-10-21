@@ -46,9 +46,9 @@ const ProfileCard = ({ user, type, accentColor, onFollow }) => {
                 </div>
             </div>
 
-            <button 
+            <button
                 className={`text-xs px-3 py-1 font-medium rounded-full border border-border-color ${actionColor} hover:bg-hover-color transition-colors`}
-                onClick={() => onFollow(user.id)}
+                onClick={() => onFollow(user.userId)} // Change: pass user.userId instead of user.id
             >
                 {actionText}
             </button>
@@ -272,6 +272,7 @@ export default function ProfilePanel({ onEditProfileClick }) {
         profile: state.profile,
         accentColor: state.accentColor,
     }));
+    
 
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowListModalOpen, setIsFollowListModalOpen] = useState(false);
@@ -293,14 +294,23 @@ export default function ProfilePanel({ onEditProfileClick }) {
         }
     };
 
-    const handleFollow = async (followingId) => {
+    const handleFollow = async (followingUserId) => {
+        if (!profile.username) {
+            toast.error("You must be logged in to follow users.");
+            return;
+        }
+
         const response = await fetch('/api/collaboration/follow', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ followerId: profile.username, followingId }),
+            body: JSON.stringify({ followerUserId: profile.username, followingUserId: followingUserId }),
         });
+
         if (response.ok) {
-            alert("Followed!");
+            toast.success(`You are now following ${followingUserId}!`);
+        } else {
+            const errorText = await response.text();
+            toast.error(`Failed to follow user: ${errorText}`);
         }
     };
 

@@ -29,11 +29,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // 1. Completely disable CSRF protection for the stateless API
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(toH2Console()).permitAll()
-                        .requestMatchers("/api/**").permitAll()
+                        // This is the key change to fix the 403 Forbidden error
+                        // We explicitly permit all collaboration and auth endpoints
+                        .requestMatchers("/api/auth/**", "/api/collaboration/**").permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin()));
@@ -49,7 +50,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/**", configuration); // Apply CORS to all endpoints
         return source;
     }
 }

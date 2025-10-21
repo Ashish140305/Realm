@@ -24,7 +24,6 @@ export default function EditorPage() {
     const editorRef = useRef(null);
     const terminalRef = useRef(null);
     const channelRef = useRef(null);
-    const decorations = useRef({});
 
     const [files, setFiles] = useState([
         { name: 'Demo.java', content: '// Welcome to Realm!\nfunction greet() {\n  console.log("Start coding...");\n}' },
@@ -33,7 +32,6 @@ export default function EditorPage() {
     ]);
     const [activeFile, setActiveFile] = useState(files[0]);
 
-    // This function tells the editor to resize itself when panels are moved, fixing the crash.
     const handleLayout = useCallback(() => {
         if (editorRef.current) {
             setTimeout(() => editorRef.current.layout(), 0);
@@ -67,7 +65,6 @@ export default function EditorPage() {
         }
     }, [activeFile, sessionId]);
 
-    // This function is now correctly defined and will work as expected.
     const handleRunCode = () => {
         if (terminalRef.current) {
             terminalRef.current.writeln(`\n> Running ${activeFile.name}...`);
@@ -75,14 +72,13 @@ export default function EditorPage() {
         }
     };
 
-    // This hook is refactored to correctly handle real-time updates.
     useEffect(() => {
         if (!sessionId) return;
 
-        const channel = supabase.channel(`session:${sessionId}`, { config: { broadcast: { self: false } } });
+        const channel = supabase.channel(`session:${sessionId}`);
         channelRef.current = channel;
 
-        const handleRemoteUpdate = ({ payload }) => {
+        const handleRemoteUpdate = (payload) => {
             if (editorRef.current && payload.fileName === activeFile?.name) {
                 const editor = editorRef.current;
                 const model = editor.getModel();
@@ -91,19 +87,9 @@ export default function EditorPage() {
                 }
             }
         };
-
-        const handleRemoteCursorUpdate = ({ payload }) => {
-            if (!editorRef.current || !window.monaco || payload.username === profile.username) return;
-            const newDecorations = [{
-                range: new window.monaco.Range(payload.position.lineNumber, payload.position.column, payload.position.lineNumber, payload.position.column),
-                options: { className: 'remote-cursor', after: { content: payload.username, className: 'remote-cursor-label' } },
-            }];
-            decorations.current[payload.username] = editorRef.current.deltaDecorations(decorations.current[payload.username] || [], newDecorations);
-        };
         
         channel
-            .on('broadcast', { event: 'code-update' }, handleRemoteUpdate)
-            .on('broadcast', { event: 'cursor-update' }, handleRemoteCursorUpdate)
+            .on('broadcast', { event: 'code-update' }, (payload) => handleRemoteUpdate(payload.payload))
             .on('broadcast', { event: 'session-end' }, () => {
                 alert('The collaboration session has ended.');
                 navigate(`/editor/${projectName}`);
@@ -114,25 +100,7 @@ export default function EditorPage() {
             supabase.removeChannel(channel);
             channelRef.current = null;
         };
-    }, [sessionId, profile.username, navigate, projectName, activeFile]);
-
-    const handleEditorDidMount = (editor, monaco) => {
-        editorRef.current = editor;
-        window.monaco = monaco;
-
-        editor.onDidChangeCursorPosition(e => {
-            if (channelRef.current && sessionId) {
-                clearTimeout(window.cursorTimeout);
-                window.cursorTimeout = setTimeout(() => {
-                    channelRef.current.send({
-                        type: 'broadcast',
-                        event: 'cursor-update',
-                        payload: { username: profile.username, position: e.position },
-                    });
-                }, 100);
-            }
-        });
-    };
+    }, [sessionId, activeFile, navigate, projectName]);
 
     return (
         <div className="editor-container">
@@ -151,7 +119,7 @@ export default function EditorPage() {
                                     key={activeFile.name}
                                     activeFile={activeFile}
                                     onCodeChange={handleCodeChange}
-                                    onMount={handleEditorDidMount}
+                                    editorRef={editorRef}
                                 />
                             </Panel>
                             <PanelResizeHandle className="resize-handle" />

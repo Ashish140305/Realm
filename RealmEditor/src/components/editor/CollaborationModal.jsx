@@ -6,11 +6,9 @@ import '../../styles/CollaborationModal.css';
 
 const CollaborationModal = ({ onClose, projectName }) => {
     const navigate = useNavigate();
-    const { profile, onlineUsers: onlineUserList } = useSettingsStore();
+    const { profile } = useSettingsStore();
     const [users, setUsers] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState([]);
-
-    const onlineUsers = new Set(onlineUserList);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -73,19 +71,15 @@ const CollaborationModal = ({ onClose, projectName }) => {
                 <div className="modal-body">
                     <p>Select users to collaborate with:</p>
                     <div className="user-list">
-                        {users.map(user => {
-                            const isOnline = onlineUsers.has(user.userId);
-                            return (
-                                <div
-                                    key={user.id}
-                                    className={`user-item ${selectedUsers.includes(user.userId) ? 'selected' : ''} ${!isOnline ? 'offline' : ''}`}
-                                    onClick={() => isOnline && handleUserSelect(user.userId)}
-                                >
-                                    {user.userId}
-                                    <span className={`status-dot ${isOnline ? 'online' : 'offline'}`}></span>
-                                </div>
-                            );
-                        })}
+                        {users.map(user => (
+                            <div
+                                key={user.id}
+                                className={`user-item ${selectedUsers.includes(user.userId) ? 'selected' : ''}`}
+                                onClick={() => handleUserSelect(user.userId)}
+                            >
+                                {user.userId}
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div className="modal-footer">

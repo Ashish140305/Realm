@@ -35,14 +35,19 @@ export default function LoginForm() {
                     updateProfile(profileData);
                     handleNavigate('/overview');
                 } else {
-                    setError('Could not fetch profile.');
+                    setError('Login successful, but could not fetch profile.');
                 }
             } else {
-                const errorMessage = await response.text();
-                setError(errorMessage || 'Login failed. Please check your credentials.');
+                // FIX: Better error handling for server errors
+                if (response.status >= 500) {
+                    setError('Server error. Please try again later.');
+                } else {
+                    const errorMessage = await response.text();
+                    setError(errorMessage || 'Login failed. Please check your credentials.');
+                }
             }
         } catch (err) {
-            setError('Could not connect to the server. Please try again later.');
+            setError('Could not connect to the server. Please check the backend console.');
         }
     };
 
