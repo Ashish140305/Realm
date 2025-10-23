@@ -1,9 +1,11 @@
 package com.realm.authservice.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class FollowRequest {
-    private String followerUserId;
-    private String followingUserId;
+    private String followerUsername;
+    private String followedUsername;
 }

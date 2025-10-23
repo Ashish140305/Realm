@@ -18,46 +18,35 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/projects")
 public class ProjectController {
-
     @Autowired
     private ProjectRepository projectRepository;
-
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping
-    public ResponseEntity<?> createProject(@RequestBody CreateProjectRequest createProjectRequest) {
-        Optional<User> userOptional = userRepository.findByUserId(createProjectRequest.getUserId());
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            Project project = new Project();
-            project.setName(createProjectRequest.getName());
-            project.setDescription(createProjectRequest.getDescription());
-            project.setLanguage(createProjectRequest.getLanguage());
-            project.setUser(user);
-            projectRepository.save(project);
-            return new ResponseEntity<>("Project created successfully", HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>("User not found", HttpStatus.BAD_REQUEST);
+    @PostMapping("/create")
+    public ResponseEntity<?> createProject(@RequestBody CreateProjectRequest request) {
+        Optional<User> userOpt = userRepository.findByUsername(request.getOwnerUsername()); // Corrected: findByUsername
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>("Owner not found", HttpStatus.NOT_FOUND);
         }
+        Project project = new Project();
+        project.setName(request.getName());
+        project.setOwner(userOpt.get());
+        Project savedProject = projectRepository.save(project);
+        return new ResponseEntity<>(savedProject, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<ProjectDto>> getProjects(@PathVariable String userId) {
-        Optional<User> userOptional = userRepository.findByUserId(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            List<Project> projects = projectRepository.findByUser(user);
-            List<ProjectDto> projectDtos = projects.stream().map(project -> {
-                ProjectDto dto = new ProjectDto();
-                dto.setName(project.getName());
-                dto.setDescription(project.getDescription());
-                dto.setLanguage(project.getLanguage());
-                return dto;
-            }).collect(Collectors.toList());
-            return ResponseEntity.ok(projectDtos);
-        } else {
-            return ResponseEntity.notFound().build();
+    @GetMapping("/user/{username}")
+    public ResponseEntity<List<ProjectDto>> getProjectsByUser(@PathVariable String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username); // Corrected: findByUsername
+        if (userOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        List<Project> projects = projectRepository.findByOwner(userOpt.get());
+        List<ProjectDto> projectDtos = projects.stream()
+                .map(project -> new ProjectDto(project.getId(), project.getName(), project.getOwner().getUsername()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(projectDtos);
     }
+
 }

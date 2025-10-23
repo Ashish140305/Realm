@@ -1,28 +1,47 @@
 package com.realm.authservice.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Data;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.util.HashSet;
+import java.util.Set;
 
-@Data
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userId;
+    @Column(nullable = false, unique = true)
+    private String username;
+
+    @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false)
     private String password;
-    private String profession;
-    private String company;
-    private String bio;
-    private String github;
-    private String linkedin;
-    private String twitter;
+
+    @Column
+    private String name;
+
+    // Corrected Relationships
+    @OneToMany(mappedBy = "follower")
+    private Set<Follow> following = new HashSet<>();
+
+    @OneToMany(mappedBy = "followed") // This now correctly matches the field in Follow.java
+    private Set<Follow> followers = new HashSet<>();
+
+    public User() {
+    }
+
+    public User(String username, String email, String password, String name) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.name = name;
+    }
 }

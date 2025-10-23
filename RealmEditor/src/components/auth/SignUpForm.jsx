@@ -1,92 +1,72 @@
 import React, { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { FaUser, FaLock, FaEnvelope } from 'react-icons/fa';
-import RealmLogo from '../../assets/RealmLogo';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { FcGoogle } from "react-icons/fc"; // Corrected import path
+import { FaMicrosoft, FaApple } from "react-icons/fa6";
 
-export default function SignUpForm() {
-    const handleNavigate = useOutletContext();
-    const [userId, setUserId] = useState('');
+const SignUpForm = () => {
+    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (!userId || !email || !password) {
-            setError('All fields are required.');
+        if (!name || !username || !email || !password) {
+            setError('Please fill in all fields.');
             return;
         }
 
         try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, email, password }),
-            });
+            await axios.post('/api/auth/signup', { name, username, email, password });
+            
+            toast.success('Sign-up successful! Please log in.');
+            navigate('/login');
 
-            if (response.ok) {
-                // On successful registration, navigate to the login page
-                handleNavigate('/login');
-            } else {
-                 // FIX: Better error handling for server errors
-                if (response.status >= 500) {
-                    setError('Server error. Please try again later.');
-                } else {
-                    const errorMessage = await response.text();
-                    setError(errorMessage || 'Registration failed. Please try again.');
-                }
-            }
         } catch (err) {
-            setError('Could not connect to the server. Please check the backend console.');
+            setError('Failed to sign up. Please try a different username or email.');
+            toast.error('Sign-up failed.');
+            console.error('Sign-up error:', err);
         }
     };
 
     return (
-        <form className="auth-form" onSubmit={handleSubmit}>
-            <RealmLogo />
-            <h2>Create Account</h2>
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-            <div className="input-group">
-                <FaUser className="input-icon" />
-                <label htmlFor="userid">UserID</label>
-                <input
-                    type="text"
-                    id="userid"
-                    placeholder="Choose a UserID"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
-                />
+        <div className="form-container">
+            <h2 className="form-title">Create Account</h2>
+            {error && <p className="form-error">{error}</p>}
+            <form onSubmit={handleSubmit}>
+                <div className="input-group">
+                    <label htmlFor="name">Name</label>
+                    <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your full name" />
+                </div>
+                <div className="input-group">
+                    <label htmlFor="username">Username</label>
+                    <input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" />
+                </div>
+                <div className="input-group">
+                    <label htmlFor="email">Email</label>
+                    <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" />
+                </div>
+                <div className="input-group">
+                    <label htmlFor="password">Password</label>
+                    <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Create a password" />
+                </div>
+                <button type="submit" className="form-button">Continue</button>
+            </form>
+            <div className="form-footer">
+                <p>Already have an account? <a href="/login">Log In</a></p>
+                <div className="divider">OR</div>
+                <button className="social-button"><FcGoogle /> Continue with Google</button>
+                <button className="social-button"><FaMicrosoft /> Continue with Microsoft</button>
+                <button className="social-button"><FaApple /> Continue with Apple</button>
             </div>
-            <div className="input-group">
-                <FaEnvelope className="input-icon" />
-                <label htmlFor="email">Email</label>
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-            </div>
-            <div className="input-group">
-                <FaLock className="input-icon" />
-                <label htmlFor="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-            </div>
-            <button type="submit" className="continue-btn">
-                Sign Up
-            </button>
-            <button type="button" className="auth-link" onClick={() => handleNavigate('/login')}>
-                Already have an account? Login
-            </button>
-        </form>
+        </div>
     );
-}
+};
+
+export default SignUpForm;

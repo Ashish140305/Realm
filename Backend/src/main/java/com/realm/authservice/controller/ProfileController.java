@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/profile")
@@ -16,47 +17,33 @@ public class ProfileController {
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ProfileDto> getProfile(@PathVariable String userId) {
-        Optional<User> userOptional = userRepository.findByUserId(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            ProfileDto profileDto = new ProfileDto();
-            profileDto.setName(user.getUserId());
-            profileDto.setUsername(user.getUserId());
-            profileDto.setBio(user.getBio());
-            profileDto.setEmail(user.getEmail());
-            profileDto.setProfession(user.getProfession());
-            profileDto.setCompany(user.getCompany());
-            ProfileDto.Socials socials = new ProfileDto.Socials();
-            socials.setGithub(user.getGithub());
-            socials.setLinkedin(user.getLinkedin());
-            socials.setTwitter(user.getTwitter());
-            profileDto.setSocials(socials);
-            return ResponseEntity.ok(profileDto);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping("/{username}")
+    public ResponseEntity<ProfileDto> getProfile(@PathVariable String username) {
+        return userRepository.findByUsername(username)
+                .map(user -> {
+                    ProfileDto profileDto = new ProfileDto();
+                    profileDto.setUsername(user.getUsername());
+                    profileDto.setName(user.getName());
+                    profileDto.setEmail(user.getEmail());
+                    return ResponseEntity.ok(profileDto);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{userId}")
-    public ResponseEntity<?> updateProfile(@PathVariable String userId, @RequestBody ProfileDto profileDto) {
-        Optional<User> userOptional = userRepository.findByUserId(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            user.setBio(profileDto.getBio());
-            user.setEmail(profileDto.getEmail());
-            user.setProfession(profileDto.getProfession());
-            user.setCompany(profileDto.getCompany());
-            if (profileDto.getSocials() != null) {
-                user.setGithub(profileDto.getSocials().getGithub());
-                user.setLinkedin(profileDto.getSocials().getLinkedin());
-                user.setTwitter(profileDto.getSocials().getTwitter());
-            }
-            userRepository.save(user);
-            return ResponseEntity.ok("Profile updated successfully");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    // New method to get all users
+    @GetMapping("/users")
+    public ResponseEntity<List<ProfileDto>> getAllUsers() {
+        List<ProfileDto> users = userRepository.findAll().stream()
+                .map(user -> {
+                    ProfileDto profileDto = new ProfileDto();
+                    profileDto.setUsername(user.getUsername());
+                    profileDto.setName(user.getName());
+                    profileDto.setEmail(user.getEmail());
+                    // Add a default avatar for simplicity
+                    profileDto.setAvatar("https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.getUsername());
+                    return profileDto;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
     }
 }

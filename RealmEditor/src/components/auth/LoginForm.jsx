@@ -1,95 +1,85 @@
 import React, { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { FcGoogle } from 'react-icons/fc';
-import { FaMicrosoft, FaApple, FaUser, FaLock } from 'react-icons/fa';
-import RealmLogo from '../../assets/RealmLogo';
-import useSettingsStore from '../../store/useSettingsStore';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { FcGoogle } from "react-icons/fc"; // Corrected import path
+import { FaMicrosoft, FaApple } from "react-icons/fa6";
 
-export default function LoginForm() {
-    const handleNavigate = useOutletContext();
-    const [userId, setUserId] = useState('');
+const LoginForm = () => {
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { updateProfile } = useSettingsStore();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        if (!userId || !password) {
-            setError('UserID and Password are required.');
+        if (!username || !password) {
+            setError('Please enter both username and password.');
             return;
         }
 
         try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, password }),
-            });
+            const response = await axios.post('/api/auth/login', { username, password });
+            
+            toast.success('Login successful! Redirecting...');
+            
+            localStorage.setItem('username', username);
 
-            if (response.ok) {
-                const profileResponse = await fetch(`/api/profile/${userId}`);
-                if (profileResponse.ok) {
-                    const profileData = await profileResponse.json();
-                    updateProfile(profileData);
-                    handleNavigate('/overview');
-                } else {
-                    setError('Login successful, but could not fetch profile.');
-                }
-            } else {
-                // FIX: Better error handling for server errors
-                if (response.status >= 500) {
-                    setError('Server error. Please try again later.');
-                } else {
-                    const errorMessage = await response.text();
-                    setError(errorMessage || 'Login failed. Please check your credentials.');
-                }
-            }
+            navigate('/overview');
+
         } catch (err) {
-            setError('Could not connect to the server. Please check the backend console.');
+            setError('Invalid username or password. Please try again.');
+            toast.error('Login failed. Please check your credentials.');
+            console.error('Login error:', err);
         }
     };
 
     return (
-        <form className="auth-form" onSubmit={handleSubmit}>
-            <RealmLogo />
-            <h2>Login</h2>
-            {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-            <div className="input-group">
-                <FaUser className="input-icon" />
-                <label htmlFor="userid">UserID</label>
-                <input
-                    type="text"
-                    id="userid"
-                    placeholder="Enter your UserID"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
-                />
+        <div className="form-container">
+            <h2 className="form-title">Login</h2>
+            {error && <p className="form-error">{error}</p>}
+            <form onSubmit={handleSubmit}>
+                <div className="input-group">
+                    <label htmlFor="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Enter your username"
+                        autoComplete="username"
+                    />
+                </div>
+                <div className="input-group">
+                    <label htmlFor="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        autoComplete="current-password"
+                    />
+                </div>
+                <button type="submit" className="form-button">Continue</button>
+            </form>
+            <div className="form-footer">
+                <p>New Here, <a href="/signup">Create Account</a></p>
+                <div className="divider">OR</div>
+                <button className="social-button">
+                    <FcGoogle /> Continue with Google
+                </button>
+                <button className="social-button">
+                    <FaMicrosoft /> Continue with Microsoft
+                </button>
+                <button className="social-button">
+                    <FaApple /> Continue with Apple
+                </button>
             </div>
-            <div className="input-group">
-                <FaLock className="input-icon" />
-                <label htmlFor="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    placeholder="Enter your Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-            </div>
-            <button type="submit" className="continue-btn">
-                Continue
-            </button>
-            <button type="button" className="auth-link" onClick={() => handleNavigate('/signup')}>
-                New Here, Create Account
-            </button>
-            <div className="divider"><span>OR</span></div>
-            <div className="social-login-buttons">
-                <button type="button" className="social-btn"><FcGoogle /> Continue with Google</button>
-                <button type="button" className="social-btn"><FaMicrosoft style={{ color: '#00A4EF' }} /> Continue with Microsoft</button>
-                <button type="button" className="social-btn"><FaApple /> Continue with Apple</button>
-            </div>
-        </form>
+        </div>
     );
-}
+};
+
+export default LoginForm;

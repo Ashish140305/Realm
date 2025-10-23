@@ -1,11 +1,11 @@
 package com.realm.authservice.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class CreateProjectRequest {
     private String name;
-    private String description;
-    private String language;
-    private String userId;
+    private String ownerUsername; // Ensure this field exists and has getters
 }

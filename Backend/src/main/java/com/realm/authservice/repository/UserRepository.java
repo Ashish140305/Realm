@@ -2,12 +2,18 @@ package com.realm.authservice.repository;
 
 import com.realm.authservice.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
+import org.springframework.stereotype.Repository;
+
+import java.util.List; // <-- Add this import
 import java.util.Optional;
 
+@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUserId(String userId);
 
-    // Add this method to search for users
-    List<User> findByUserIdContainingIgnoreCase(String userId);
+    Optional<User> findByUsername(String username);
+
+    Optional<User> findByEmail(String email);
+
+    // Add this method for searching users
+    List<User> findByUsernameContainingIgnoreCase(String username);
 }
