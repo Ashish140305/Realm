@@ -9,7 +9,7 @@ import AuthPage from './pages/AuthPage';
 import LoginForm from './components/auth/LoginForm';
 import SignUpForm from './components/auth/SignUpForm';
 import OverviewPage from './pages/OverviewPage';
-import EditorPage from './pages/EditorPage';
+import CollaborativeEditor from './pages/CollaborativeEditor'; // Use the new editor
 import ThemeManager from './components/ui/ThemeManager';
 import SessionNotification from './components/overview/SessionNotification';
 import PresenceTracker from './components/ui/PresenceTracker';
@@ -27,9 +27,11 @@ export default function App() {
           <Route path="/signup" element={<SignUpForm />} />
         </Route>
         <Route path="/overview" element={<OverviewPage />} />
-        {/* Updated Route */}
-        <Route path="/editor/:projectName" element={<EditorPage />} />
-        <Route path="/editor" element={<EditorPage />} />
+        
+        {/* CORRECTED ROUTES: Point to the new CollaborativeEditor */}
+        <Route path="/editor/:projectName" element={<CollaborativeEditor />} />
+        <Route path="/editor" element={<CollaborativeEditor />} />
+
       </Routes>
       <ToastContainer position="bottom-right" theme="colored" autoClose={3000} hideProgressBar />
     </Router>

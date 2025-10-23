@@ -31,8 +31,9 @@ public class SecurityConfig {
                 }))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/ws/**").permitAll() // <-- ADD THIS LINE
+                        .requestMatchers("/api/auth/**").permitAll() // Allow all auth requests
+                        .requestMatchers("/api/profile/**").permitAll() // Allow all profile requests
+                        .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated());
         return http.build();
     }

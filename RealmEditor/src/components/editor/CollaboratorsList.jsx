@@ -2,9 +2,17 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
-const CollaboratorsList = ({ collaborators, onSelectUser }) => {
+export function CollaboratorsList({
+  collaborators,
+  theme,
+}) {
   const getStatusColor = (status) => {
     switch (status) {
       case "online":
@@ -21,7 +29,11 @@ const CollaboratorsList = ({ collaborators, onSelectUser }) => {
   return (
     <div className="h-full flex flex-col">
       <div
-        className="p-3 border-b bg-card border-border"
+        className={`p-3 border-b ${
+          theme === "dark"
+            ? "bg-[#252526] border-[#2d2d2d]"
+            : "bg-[#f3f3f3] border-[#e5e5e5]"
+        }`}
       >
         <div className="flex items-center justify-between">
           <h4 className="uppercase tracking-wide">Collaborators</h4>
@@ -36,8 +48,11 @@ const CollaboratorsList = ({ collaborators, onSelectUser }) => {
               <Tooltip key={collab.id}>
                 <TooltipTrigger asChild>
                   <div
-                    className="flex items-center gap-3 p-2 rounded-md transition-colors cursor-pointer hover:bg-accent"
-                    onClick={() => onSelectUser(collab)}
+                    className={`flex items-center gap-3 p-2 rounded-md transition-colors cursor-pointer ${
+                      theme === "dark"
+                        ? "hover:bg-[#2a2d2e]"
+                        : "hover:bg-[#f3f3f3]"
+                    }`}
                   >
                     <div className="relative">
                       <Avatar className="h-9 w-9">
@@ -45,7 +60,9 @@ const CollaboratorsList = ({ collaborators, onSelectUser }) => {
                         <AvatarFallback>{collab.name[0]}</AvatarFallback>
                       </Avatar>
                       <div
-                        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card ${getStatusColor(collab.status)}`}
+                        className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 ${
+                          theme === "dark" ? "border-[#252526]" : "border-white"
+                        } ${getStatusColor(collab.status)}`}
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -85,6 +102,4 @@ const CollaboratorsList = ({ collaborators, onSelectUser }) => {
       </ScrollArea>
     </div>
   );
-};
-
-export default CollaboratorsList;
+}

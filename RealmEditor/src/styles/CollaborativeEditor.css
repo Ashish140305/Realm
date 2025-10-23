@@ -1,0 +1,60 @@
+.token-keyword {
+    color: #569cd6;
+}
+
+.token-string {
+    color: #ce9178;
+}
+
+.token-comment {
+    color: #6a9955;
+    font-style: italic;
+}
+
+.token-number {
+    color: #b5cea8;
+}
+
+.token-function {
+    color: #dcdcaa;
+}
+
+.dark .token-keyword {
+    color: #569cd6;
+}
+
+.dark .token-string {
+    color: #ce9178;
+}
+
+.dark .token-comment {
+    color: #6a9955;
+}
+
+.dark .token-number {
+    color: #b5cea8;
+}
+
+.dark .token-function {
+    color: #dcdcaa;
+}
+
+.light .token-keyword {
+    color: #0000ff;
+}
+
+.light .token-string {
+    color: #a31515;
+}
+
+.light .token-comment {
+    color: #008000;
+}
+
+.light .token-number {
+    color: #098658;
+}
+
+.light .token-function {
+    color: #795e26;
+}
