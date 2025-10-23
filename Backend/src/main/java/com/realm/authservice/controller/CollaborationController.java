@@ -60,7 +60,6 @@ public class CollaborationController {
         return ResponseEntity.ok(userRepository.findByUserIdContainingIgnoreCase(query));
     }
 
-    // New endpoint to handle following a user
     @PostMapping("/follow")
     public ResponseEntity<?> followUser(@RequestBody FollowRequest followRequest) {
         Optional<User> followerOpt = userRepository.findByUserId(followRequest.getFollowerUserId());
@@ -87,5 +86,13 @@ public class CollaborationController {
         followRepository.save(follow);
 
         return new ResponseEntity<>("Successfully followed user.", HttpStatus.OK);
+    }
+
+    @PostMapping("/start-with-user")
+    public ResponseEntity<CollaborationSession> startSessionWithUser(@RequestBody List<String> userIds) {
+        CollaborationSession session = new CollaborationSession();
+        session.setUserIds(userIds);
+        CollaborationSession savedSession = collaborationSessionRepository.save(session);
+        return ResponseEntity.ok(savedSession);
     }
 }

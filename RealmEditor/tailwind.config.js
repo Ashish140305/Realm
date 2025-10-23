@@ -7,13 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        'background': 'var(--background-color)',
-        'card-background': 'var(--card-background-color)', // Solid background
-        'primary': 'var(--primary-color)',
-        'accent': 'var(--accent-color)',
-        'text-primary': 'var(--primary-text-color)',
-        'text-secondary': 'var(--secondary-text-color)',
-        'border-color': 'var(--border-color)',
+        'background': '#1e1e1e',
+        'card': '#252526',
+        'border': '#2d2d2d',
+        'primary': '#007acc',
+        'muted-foreground': '#858585',
+        'accent': '#37373d',
+        'primary-foreground': '#ffffff',
+        'secondary': '#3c3c3c',
+        'secondary-foreground': '#ffffff',
+        'destructive': '#f44747',
       },
     },
   },
