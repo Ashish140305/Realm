@@ -1,7 +1,6 @@
 // RealmEditor/src/pages/CollaborativeEditor.jsx
-
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Resizable } from "re-resizable";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -16,8 +15,6 @@ import { CommitHistoryPanel } from "../components/editor/CommitHistoryPanel";
 import { RunCodeModal } from "../components/editor/RunCodeModal";
 import { CommitModal } from "../components/editor/CommitModal";
 import { DiffViewerModal } from "../components/editor/DiffViewerModal";
-import CollaborationModal from "../components/editor/CollaborationModal"; // Import the collaboration modal
-import EndSessionButton from "../components/editor/EndSessionButton"; // Import the end session button
 
 // --- UI Imports (with corrected paths) ---
 import { Button } from "../components/ui/button";
@@ -45,7 +42,6 @@ import {
   WifiOff,
 } from "lucide-react";
 
-// --- Sample Data ---
 const sampleCode = `// Welcome to your collaborative editor!
 // Your code will be synced in real-time with others.
 import React from 'react';
@@ -58,16 +54,12 @@ function App() {
   );
 }`;
 
-// --- Main Editor Component ---
 const CollaborativeEditor = () => {
     const { projectName } = useParams();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const sessionId = searchParams.get('session');
     const [theme, setTheme] = useState("dark");
     const [isConnected, setIsConnected] = useState(false);
     
-    // --- State Management ---
     const [allUsers, setAllUsers] = useState([]);
     const [collaborators, setCollaborators] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
@@ -76,15 +68,12 @@ const CollaborativeEditor = () => {
     const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
     const [collaborativeCursors, setCollaborativeCursors] = useState([]);
 
-    // --- Modal States ---
-    const [isCollabModalOpen, setCollabModalOpen] = useState(false); // State for collaboration modal
     const [showRunModal, setShowRunModal] = useState(false);
     const [showCommitModal, setShowCommitModal] = useState(false);
     const [showDiffModal, setShowDiffModal] = useState(false);
     const [selectedCommitId, setSelectedCommitId] = useState("");
     const [commits, setCommits] = useState([{ id: "d4e5f6g", message: "Initial commit", author: "System", avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=system", timestamp: new Date(Date.now() - 7200000), filesChanged: 1, additions: 15, deletions: 0 }]);
 
-    // --- Refs for managing state within callbacks ---
     const channelRef = useRef(null);
     const isApplyingRemoteChange = useRef(false);
     const activeFileRef = useRef(null);
@@ -92,7 +81,6 @@ const CollaborativeEditor = () => {
     const activeFile = openFiles.find((f) => f.id === activeFileId);
     useEffect(() => { activeFileRef.current = activeFile; }, [activeFile]);
 
-    // --- User and Data Fetching ---
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -118,9 +106,13 @@ const CollaborativeEditor = () => {
         fetchUserData();
     }, [navigate]);
 
-    // --- Supabase Real-time Connection ---
     useEffect(() => {
         if (!projectName || !currentUser) return;
+
+        if (channelRef.current) {
+            supabase.removeChannel(channelRef.current);
+            channelRef.current = null;
+        }
 
         const channel = supabase.channel(`session:${projectName}`, {
             config: {
@@ -132,15 +124,11 @@ const CollaborativeEditor = () => {
         const handleRemoteCodeChange = ({ payload }) => {
             if (payload.sender !== currentUser.username && payload.fileId === activeFileRef.current?.id) {
                 isApplyingRemoteChange.current = true;
-                setOpenFiles(prevFiles => 
-                    prevFiles.map(f => 
-                        f.id === payload.fileId ? { ...f, content: payload.content } : f
-                    )
-                );
+                setOpenFiles(prev => prev.map(f => f.id === payload.fileId ? { ...f, content: payload.content } : f));
                 setTimeout(() => { isApplyingRemoteChange.current = false; }, 50);
             }
         };
-        
+
         const handleRemoteCursorChange = ({ payload }) => {
             if (payload.sender !== currentUser.username) {
                 setCollaborativeCursors(prev => {
@@ -191,7 +179,6 @@ const CollaborativeEditor = () => {
         };
     }, [projectName, currentUser, allUsers]);
 
-    // --- Event Handlers ---
     const handleCodeChange = useCallback((content) => {
         if (isApplyingRemoteChange.current) return;
         setOpenFiles(prev => prev.map(f => f.id === activeFileId ? { ...f, content } : f));
@@ -217,7 +204,7 @@ const CollaborativeEditor = () => {
 
     const handleFileClick = (file) => { if (file.type === "file") { if (!openFiles.some(f => f.id === file.id)) { setOpenFiles(p => [...p, { id: file.id, name: file.name, content: `// ${file.name}\n`, language: "javascript" }]); } setActiveFileId(file.id); } };
     const handleCloseFile = (id) => { const n = openFiles.filter((f) => f.id !== id); setOpenFiles(n); if (activeFileId === id && n.length > 0) { setActiveFileId(n[0].id); } else if (n.length === 0) { setActiveFileId(null); } };
-    const handleShare = () => { setCollabModalOpen(true) };
+    const handleShare = () => { navigator.clipboard.writeText(window.location.href); toast.success("Invite link copied!"); };
     const handleCommit = (message) => { const n = { id: Date.now().toString(36), message, author: currentUser?.name || "You", avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`, timestamp: new Date(), filesChanged: 1, additions: 10, deletions: 2, }; setCommits([n, ...commits]); toast.success("Changes committed!"); };
     const handleViewDiff = (commitId) => { setSelectedCommitId(commitId); setShowDiffModal(true); };
     const toggleTheme = () => { const n = theme === "dark" ? "light" : "dark"; setTheme(n); document.documentElement.classList.toggle("dark", n === "dark"); };
@@ -225,7 +212,6 @@ const CollaborativeEditor = () => {
 
     return (
         <div className={`h-screen flex flex-col ${ theme === "dark" ? "bg-[#1e1e1e] text-white" : "bg-white text-black" }`} >
-            {/* Header */}
             <div className={`h-12 border-b flex items-center justify-between px-4 ${ theme === "dark" ? "bg-[#252526] border-[#2d2d2d]" : "bg-[#f3f3f3] border-[#e5e5e5]"}`}>
                 <div className="flex items-center gap-4">
                     <Code2 className="h-5 w-5 text-primary" />
@@ -249,8 +235,6 @@ const CollaborativeEditor = () => {
                     ) : (<div className="h-8 w-8 rounded-full bg-muted animate-pulse" />)}
                 </div>
             </div>
-
-            {/* Main Content */}
             <div className="flex-1 flex overflow-hidden">
                 <Resizable defaultSize={{ width: 250, height: "100%" }} minWidth={150} maxWidth={400} enable={{ right: true }} className={`border-r ${theme === "dark" ? "bg-[#252526] border-[#2d2d2d]" : "bg-[#f3f3f3] border-[#e5e5e5]"}`}><CollaborativeFileTree onFileClick={handleFileClick} activeFileId={activeFileId} theme={theme} /></Resizable>
                 <div className="flex-1 flex flex-col">
@@ -266,16 +250,10 @@ const CollaborativeEditor = () => {
                     </Tabs>
                 </Resizable>
             </div>
-
-            {/* Footer */}
             <div className={`h-6 border-t flex items-center justify-between px-4 text-xs ${theme === "dark" ? "bg-[#007acc] text-white" : "bg-[#007acc] text-white"}`}>
                 <div className="flex items-center gap-4"><div className="flex items-center gap-1">{isConnected ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3 text-red-400" />}<span>{isConnected ? "Connected" : "Disconnected"}</span></div></div>
                 <div className="flex items-center gap-4"><span>{activeFile?.name || "No file"}</span><span>Ln {cursorPosition.line}, Col {cursorPosition.column}</span><span>{activeFile?.language || "plaintext"}</span></div>
             </div>
-
-            {/* Modals and Session Button */}
-            {isCollabModalOpen && <CollaborationModal onClose={() => setCollabModalOpen(false)} projectName={projectName} />}
-            {sessionId && <EndSessionButton sessionId={sessionId} />}
             <RunCodeModal open={showRunModal} onOpenChange={setShowRunModal} theme={theme} />
             <CommitModal open={showCommitModal} onOpenChange={setShowCommitModal} onCommit={handleCommit} />
             <DiffViewerModal open={showDiffModal} onOpenChange={setShowDiffModal} commitId={selectedCommitId} theme={theme} />

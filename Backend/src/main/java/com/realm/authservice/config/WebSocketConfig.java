@@ -1,5 +1,4 @@
 // Backend/src/main/java/com/realm/authservice/config/WebSocketConfig.java
-
 package com.realm.authservice.config;
 
 import org.springframework.context.annotation.Configuration;
