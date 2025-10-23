@@ -1,3 +1,4 @@
+// RealmEditor/src/components/overview/CreateProjectModal.jsx
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -28,7 +29,8 @@ export default function CreateProjectModal({ isVisible, onClose, onProjectCreate
         name: '',
         description: '',
         language: 'JavaScript',
-        userId: profile.username
+        // FIX: Changed `userId` to `ownerUsername` to match the backend DTO
+        ownerUsername: profile.username
     });
 
     const handleInputChange = (e) => {
@@ -43,8 +45,8 @@ export default function CreateProjectModal({ isVisible, onClose, onProjectCreate
         }
         
         try {
-            // Use relative path to leverage the Vite proxy
-            const response = await fetch('/api/projects', {
+            // FIX: Corrected the API endpoint from '/api/projects' to '/api/projects/create'
+            const response = await fetch('/api/projects/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

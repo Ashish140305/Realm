@@ -1,3 +1,4 @@
+// Backend/src/main/java/com/realm/authservice/config/SecurityConfig.java
 package com.realm.authservice.config;
 
 import org.springframework.context.annotation.Bean;
@@ -46,9 +47,15 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
 
-                // 5. Define authorization rules
+                // 5. Define authorization rules (FIXED)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**", "/ws/**", "/api/profile/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/ws/**",
+                                "/api/profile/**",
+                                "/api/projects/**", // <-- FIX: Allow project API calls
+                                "/api/collaboration/**" // <-- FIX: Allow collaboration API calls
+                        ).permitAll()
                         .anyRequest().authenticated());
 
         return http.build();

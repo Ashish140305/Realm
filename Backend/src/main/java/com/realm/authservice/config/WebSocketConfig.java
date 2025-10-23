@@ -1,3 +1,5 @@
+// Backend/src/main/java/com/realm/authservice/config/WebSocketConfig.java
+
 package com.realm.authservice.config;
 
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").withSockJS();
+        // FIX: Added allowed origins to permit connections from the frontend dev server
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins("http://localhost:5173")
+                .withSockJS();
     }
 }

@@ -1,3 +1,4 @@
+// RealmEditor/src/pages/OverviewPage.jsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import ProfilePanel from '../components/overview/ProfilePanel';
@@ -19,13 +20,13 @@ export default function OverviewPage() {
     const fetchProjects = useCallback(async () => {
         if (!profile.username) return;
         try {
-            // Use relative path for the API call
-            const response = await fetch(`/api/projects/${profile.username}`);
+            // FIX: Corrected the API endpoint path to match the backend controller
+            const response = await fetch(`/api/projects/user/${profile.username}`);
             if (response.ok) {
                 const data = await response.json();
                 setProjects(data);
             } else {
-                console.error("Response not OK:", response.status);
+                console.error("Response not OK:", response.status, await response.text());
             }
         } catch (error) {
             console.error("Error fetching projects:", error);
