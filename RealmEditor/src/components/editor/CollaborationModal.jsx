@@ -1,6 +1,7 @@
+// RealmEditor/src/components/editor/CollaborationModal.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../../supabaseClient';
 import useSettingsStore from '../../store/useSettingsStore';
 import '../../styles/CollaborationModal.css';
 
@@ -8,41 +9,36 @@ const CollaborationModal = ({ onClose, projectName }) => {
     const navigate = useNavigate();
     const { profile } = useSettingsStore();
     const [users, setUsers] = useState([]);
-    const [selectedUsers, setSelectedUsers] = useState([]);
 
     useEffect(() => {
         const fetchUsers = async () => {
-            const response = await fetch(`/api/collaboration/users`);
+            if (!profile.username) return;
+            // This endpoint should return all users except the current one.
+            const response = await fetch(`/api/profile/users`);
             if (response.ok) {
                 const allUsers = await response.json();
-                const otherUsers = allUsers.filter(user => user.userId !== profile.username);
+                // Ensure profile is loaded and filter out the current user
+                const otherUsers = allUsers.filter(user => user.username !== profile.username);
                 setUsers(otherUsers);
             }
         };
 
         fetchUsers();
     }, [profile.username]);
-
-    const handleUserSelect = (userId) => {
-        setSelectedUsers(prev =>
-            prev.includes(userId)
-                ? prev.filter(id => id !== userId)
-                : [...prev, userId]
-        );
-    };
-
-    const handleStartSession = async () => {
+    
+    // This function now handles both selecting a user and starting the session
+    const handleStartSessionWithUser = async (collaboratorUsername) => {
         try {
             const response = await fetch('/api/collaboration/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Add the current user to the session
-                body: JSON.stringify([profile.username, ...selectedUsers]),
+                // The body now contains only the current user and the selected collaborator
+                body: JSON.stringify([profile.username, collaboratorUsername]),
             });
 
             if (response.ok) {
                 const session = await response.json();
-                // Just navigate. The EditorPage will handle the subscription.
+                // Navigate to the editor with the new session ID
                 navigate(`/editor/${projectName}?session=${session.id}`);
                 onClose();
             } else {
@@ -54,31 +50,28 @@ const CollaborationModal = ({ onClose, projectName }) => {
     };
 
     return (
-        <div className="collaboration-modal-backdrop">
-            <div className="collaboration-modal">
+        <div className="collaboration-modal-backdrop" onClick={onClose}>
+            <div className="collaboration-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>Start a Collaboration Session</h2>
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
                 <div className="modal-body">
-                    <p>Select users to collaborate with:</p>
+                    <p>Select a user to start a session:</p>
                     <div className="user-list">
                         {users.map(user => (
                             <div
-                                key={user.id}
-                                className={`user-item ${selectedUsers.includes(user.userId) ? 'selected' : ''}`}
-                                onClick={() => handleUserSelect(user.userId)}
+                                key={user.username} // Use a unique key like username
+                                className="user-item"
+                                // On click, immediately start the session with this user
+                                onClick={() => handleStartSessionWithUser(user.username)}
                             >
-                                {user.userId}
+                                {user.name} (@{user.username})
                             </div>
                         ))}
                     </div>
                 </div>
-                <div className="modal-footer">
-                    <button onClick={handleStartSession} className="start-session-btn" disabled={selectedUsers.length === 0}>
-                        Start Session
-                    </button>
-                </div>
+                {/* The footer with the "Start Session" button is removed */}
             </div>
         </div>
     );

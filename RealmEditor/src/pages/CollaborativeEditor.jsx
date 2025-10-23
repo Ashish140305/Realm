@@ -1,7 +1,7 @@
 // RealmEditor/src/pages/CollaborativeEditor.jsx
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { Resizable } from "re-resizable";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -16,6 +16,8 @@ import { CommitHistoryPanel } from "../components/editor/CommitHistoryPanel";
 import { RunCodeModal } from "../components/editor/RunCodeModal";
 import { CommitModal } from "../components/editor/CommitModal";
 import { DiffViewerModal } from "../components/editor/DiffViewerModal";
+import CollaborationModal from "../components/editor/CollaborationModal"; // Import the collaboration modal
+import EndSessionButton from "../components/editor/EndSessionButton"; // Import the end session button
 
 // --- UI Imports (with corrected paths) ---
 import { Button } from "../components/ui/button";
@@ -60,6 +62,8 @@ function App() {
 const CollaborativeEditor = () => {
     const { projectName } = useParams();
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const sessionId = searchParams.get('session');
     const [theme, setTheme] = useState("dark");
     const [isConnected, setIsConnected] = useState(false);
     
@@ -73,6 +77,7 @@ const CollaborativeEditor = () => {
     const [collaborativeCursors, setCollaborativeCursors] = useState([]);
 
     // --- Modal States ---
+    const [isCollabModalOpen, setCollabModalOpen] = useState(false); // State for collaboration modal
     const [showRunModal, setShowRunModal] = useState(false);
     const [showCommitModal, setShowCommitModal] = useState(false);
     const [showDiffModal, setShowDiffModal] = useState(false);
@@ -127,7 +132,6 @@ const CollaborativeEditor = () => {
         const handleRemoteCodeChange = ({ payload }) => {
             if (payload.sender !== currentUser.username && payload.fileId === activeFileRef.current?.id) {
                 isApplyingRemoteChange.current = true;
-                // FIX: Use a functional update to ensure you're working with the latest state
                 setOpenFiles(prevFiles => 
                     prevFiles.map(f => 
                         f.id === payload.fileId ? { ...f, content: payload.content } : f
@@ -213,7 +217,7 @@ const CollaborativeEditor = () => {
 
     const handleFileClick = (file) => { if (file.type === "file") { if (!openFiles.some(f => f.id === file.id)) { setOpenFiles(p => [...p, { id: file.id, name: file.name, content: `// ${file.name}\n`, language: "javascript" }]); } setActiveFileId(file.id); } };
     const handleCloseFile = (id) => { const n = openFiles.filter((f) => f.id !== id); setOpenFiles(n); if (activeFileId === id && n.length > 0) { setActiveFileId(n[0].id); } else if (n.length === 0) { setActiveFileId(null); } };
-    const handleShare = () => { navigator.clipboard.writeText(window.location.href); toast.success("Invite link copied!"); };
+    const handleShare = () => { setCollabModalOpen(true) };
     const handleCommit = (message) => { const n = { id: Date.now().toString(36), message, author: currentUser?.name || "You", avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`, timestamp: new Date(), filesChanged: 1, additions: 10, deletions: 2, }; setCommits([n, ...commits]); toast.success("Changes committed!"); };
     const handleViewDiff = (commitId) => { setSelectedCommitId(commitId); setShowDiffModal(true); };
     const toggleTheme = () => { const n = theme === "dark" ? "light" : "dark"; setTheme(n); document.documentElement.classList.toggle("dark", n === "dark"); };
@@ -269,7 +273,9 @@ const CollaborativeEditor = () => {
                 <div className="flex items-center gap-4"><span>{activeFile?.name || "No file"}</span><span>Ln {cursorPosition.line}, Col {cursorPosition.column}</span><span>{activeFile?.language || "plaintext"}</span></div>
             </div>
 
-            {/* Modals */}
+            {/* Modals and Session Button */}
+            {isCollabModalOpen && <CollaborationModal onClose={() => setCollabModalOpen(false)} projectName={projectName} />}
+            {sessionId && <EndSessionButton sessionId={sessionId} />}
             <RunCodeModal open={showRunModal} onOpenChange={setShowRunModal} theme={theme} />
             <CommitModal open={showCommitModal} onOpenChange={setShowCommitModal} onCommit={handleCommit} />
             <DiffViewerModal open={showDiffModal} onOpenChange={setShowDiffModal} commitId={selectedCommitId} theme={theme} />
