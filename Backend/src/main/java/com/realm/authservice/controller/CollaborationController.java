@@ -48,6 +48,80 @@ public class CollaborationController {
         return new ResponseEntity<>("User not found.", HttpStatus.NOT_FOUND);
     }
 
+    @PostMapping("/unfollow")
+    public ResponseEntity<String> unfollowUser(@RequestBody FollowRequest unfollowRequest) {
+        Optional<User> followerOpt = userRepository.findByUsername(unfollowRequest.getFollowerUsername());
+        Optional<User> followedOpt = userRepository.findByUsername(unfollowRequest.getFollowedUsername());
+
+        if (followerOpt.isPresent() && followedOpt.isPresent()) {
+            User follower = followerOpt.get();
+            User followed = followedOpt.get();
+
+            Optional<Follow> follow = followRepository.findByFollowerAndFollowed(follower, followed);
+            if (follow.isPresent()) {
+                followRepository.delete(follow.get());
+                return new ResponseEntity<>("Successfully unfollowed user.", HttpStatus.OK);
+            }
+            return new ResponseEntity<>("Not following this user.", HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("User not found.", HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/{username}/followers")
+    public ResponseEntity<List<ProfileDto>> getFollowers(@PathVariable String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent()) {
+            List<Follow> follows = followRepository.findAllByFollowed(userOpt.get());
+            List<ProfileDto> followers = follows.stream()
+                    .map(follow -> {
+                        User follower = follow.getFollower();
+                        ProfileDto dto = new ProfileDto();
+                        dto.setUsername(follower.getUsername());
+                        dto.setName(follower.getName());
+                        dto.setEmail(follower.getEmail());
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(followers);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/{username}/following")
+    public ResponseEntity<List<ProfileDto>> getFollowing(@PathVariable String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent()) {
+            List<Follow> follows = followRepository.findAllByFollower(userOpt.get());
+            List<ProfileDto> following = follows.stream()
+                    .map(follow -> {
+                        User followed = follow.getFollowed();
+                        ProfileDto dto = new ProfileDto();
+                        dto.setUsername(followed.getUsername());
+                        dto.setName(followed.getName());
+                        dto.setEmail(followed.getEmail());
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(following);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping("/{username}/counts")
+    public ResponseEntity<Object> getCounts(@PathVariable String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            long followersCount = followRepository.countByFollowed(user);
+            long followingCount = followRepository.countByFollower(user);
+            return ResponseEntity.ok(new Object() {
+                public final long followers = followersCount;
+                public final long following = followingCount;
+            });
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<ProfileDto>> searchUsers(@RequestParam String query) {
         List<User> users = userRepository.findByUsernameContainingIgnoreCase(query);

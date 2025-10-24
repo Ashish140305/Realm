@@ -1,15 +1,12 @@
 // src/components/overview/ProfilePanel.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Icons
-import { Briefcase, Mail, Github, Linkedin, Twitter, UserPlus, Share2, Users, Edit, Search, X } from 'lucide-react'; 
+import { Briefcase, Mail, Github, Linkedin, Twitter, UserPlus, Share2, Users, Edit, Search, X } from 'lucide-react';
 import useSettingsStore from '../../store/useSettingsStore';
 import { supabase } from '../../supabaseClient';
-
-
-// --- MOCK DATA (Required for the Modal to function) ---
-const MOCK_FOLLOWING_COUNT = 12;
-const MOCK_FOLLOWERS_COUNT = 8;
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 
 // --- UTILITY COMPONENTS (Defined here to resolve ReferenceError) ---
@@ -18,7 +15,7 @@ const MOCK_FOLLOWERS_COUNT = 8;
 const ProfileCard = ({ user, type, accentColor, onFollow }) => {
     const actionText = type === 'followers' ? 'Remove' : 'Follow';
     const actionColor = type === 'followers' ? 'text-red-400' : 'text-text-secondary';
-    
+
     const handleProfileClick = () => {
         console.log(`[NAVIGATION]: Opening profile of ${user.name}`);
     };
@@ -28,27 +25,27 @@ const ProfileCard = ({ user, type, accentColor, onFollow }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            whileHover={{ 
-                scale: 1.02, 
-                boxShadow: `0 8px 15px -5px rgba(0, 0, 0, 0.3), 0 0 0 1px ${accentColor}40` 
+            whileHover={{
+                scale: 1.02,
+                boxShadow: `0 8px 15px -5px rgba(0, 0, 0, 0.3), 0 0 0 1px ${accentColor}40`
             }}
             className="group flex items-center justify-between p-3 bg-background rounded-lg border border-border-color transition-all duration-200 cursor-pointer"
         >
             <div className="flex items-center space-x-3 cursor-pointer" onClick={handleProfileClick}>
-                <img 
-                    src={`https://ui-avatars.com/api/?name=${user.name}&background=${accentColor.replace('#', '')}&color=fff&size=40`} 
-                    alt={user.name} 
-                    className="w-10 h-10 rounded-full object-cover transition-opacity duration-200 group-hover:opacity-90" 
+                <img
+                    src={`https://ui-avatars.com/api/?name=${user.name}&background=${accentColor.replace('#', '')}&color=fff&size=40`}
+                    alt={user.name}
+                    className="w-10 h-10 rounded-full object-cover transition-opacity duration-200 group-hover:opacity-90"
                 />
                 <div>
-                    <span className="text-sm font-semibold text-text-primary block transition-colors duration-200 group-hover:text-accent">{user.userId}</span>
-                    <span className="text-xs text-text-secondary block truncate">{user.title || `@${user.username}`}</span>
+                    <span className="text-sm font-semibold text-text-primary block transition-colors duration-200 group-hover:text-accent">{user.username}</span>
+                    <span className="text-xs text-text-secondary block truncate">{user.name || `@${user.username}`}</span>
                 </div>
             </div>
 
             <button
                 className={`text-xs px-3 py-1 font-medium rounded-full border border-border-color ${actionColor} hover:bg-hover-color transition-colors`}
-                onClick={() => onFollow(user.userId)} // Change: pass user.userId instead of user.id
+                onClick={() => onFollow(user.username)} // Change: pass user.userId instead of user.id
             >
                 {actionText}
             </button>
@@ -58,29 +55,24 @@ const ProfileCard = ({ user, type, accentColor, onFollow }) => {
 
 
 // FOLLOW LIST MODAL COMPONENT (Isolated Window)
-const FollowListModal = ({ isOpen, onClose, initialTab, accentColor, searchResults, onSearchChange, onFollow }) => {
+const FollowListModal = ({ isOpen, onClose, initialTab, accentColor, searchResults, onSearchChange, onFollow, username }) => {
     const [activeTab, setActiveTab] = useState(initialTab || 'following');
     const [listData, setListData] = useState([]);
 
 
     useEffect(() => {
         const fetchUsers = async () => {
-            if (activeTab === 'following') {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (user) {
-                    const response = await fetch(`/api/collaboration/users/${user.user_metadata.username}`);
-                    if (response.ok) {
-                        const users = await response.json();
-                        setListData(users);
-                    }
+            if (isOpen && username) {
+                try {
+                    const response = await axios.get(`/api/collaboration/${username}/${activeTab}`);
+                    setListData(response.data);
+                } catch (error) {
+                    console.error(`Error fetching ${activeTab}:`, error);
                 }
-            } else {
-                setListData(searchResults);
             }
         };
-        if (isOpen) {
-            fetchUsers();
-        }
+
+        fetchUsers();
 
         const channel = supabase.channel('profile-updates');
         const subscription = channel.on('broadcast', { event: 'user-updated' }, () => {
@@ -92,7 +84,7 @@ const FollowListModal = ({ isOpen, onClose, initialTab, accentColor, searchResul
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [isOpen, activeTab, searchResults]);
+    }, [isOpen, activeTab, searchResults, username]);
 
 
     const getTabClass = (tabName) =>
@@ -101,7 +93,7 @@ const FollowListModal = ({ isOpen, onClose, initialTab, accentColor, searchResul
             : 'text-text-secondary hover:bg-background'
         }`;
 
-    const displayData = listData;
+    const displayData = activeTab === 'search' ? searchResults : listData;
 
     return (
         <AnimatePresence>
@@ -155,7 +147,7 @@ const FollowListModal = ({ isOpen, onClose, initialTab, accentColor, searchResul
                                     className={getTabClass('followers')}
                                     style={activeTab === 'followers' ? { backgroundColor: accentColor } : {}}
                                 >
-                                    Followers ({MOCK_FOLLOWERS_COUNT})
+                                    Followers ({listData.length})
                                 </motion.button>
                             </div>
                         </div>
@@ -272,13 +264,32 @@ export default function ProfilePanel({ onEditProfileClick }) {
         profile: state.profile,
         accentColor: state.accentColor,
     }));
-    
+
 
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowListModalOpen, setIsFollowListModalOpen] = useState(false);
     const [currentListType, setCurrentListType] = useState('followers');
     const [searchResults, setSearchResults] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followingCount, setFollowingCount] = useState(0);
+
+    const fetchCounts = useCallback(async () => {
+        if (profile.username) {
+            try {
+                const response = await axios.get(`/api/collaboration/${profile.username}/counts`);
+                setFollowerCount(response.data.followers);
+                setFollowingCount(response.data.following);
+            } catch (error) {
+                console.error("Error fetching counts:", error);
+            }
+        }
+    }, [profile.username]);
+
+    useEffect(() => {
+        fetchCounts();
+    }, [fetchCounts]);
+
 
     const handleSearchChange = async (e) => {
         const query = e.target.value;
@@ -288,30 +299,42 @@ export default function ProfilePanel({ onEditProfileClick }) {
             const response = await fetch(`/api/collaboration/search?query=${query}`);
             if (response.ok) {
                 const users = await response.json();
-                setSearchResults(users.filter(user => user.userId !== profile.username));
+                setSearchResults(users.filter(user => user.username !== profile.username));
             }
         } else {
             setSearchResults([]);
         }
     };
 
-    const handleFollow = async (followingUserId) => {
+    const handleFollow = async (followedUsername) => {
         if (!profile.username) {
             toast.error("You must be logged in to follow users.");
             return;
         }
 
-        const response = await fetch('/api/collaboration/follow', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ followerUserId: profile.username, followingUserId: followingUserId }),
-        });
-
-        if (response.ok) {
-            toast.success(`You are now following ${followingUserId}!`);
-        } else {
-            const errorText = await response.text();
+        try {
+            await axios.post('/api/collaboration/follow', { followerUsername: profile.username, followedUsername });
+            toast.success(`You are now following ${followedUsername}!`);
+            fetchCounts();
+        } catch (error) {
+            const errorText = await error.response.data;
             toast.error(`Failed to follow user: ${errorText}`);
+        }
+    };
+
+    const handleUnfollow = async (followedUsername) => {
+        if (!profile.username) {
+            toast.error("You must be logged in to unfollow users.");
+            return;
+        }
+
+        try {
+            await axios.post('/api/collaboration/unfollow', { followerUsername: profile.username, followedUsername });
+            toast.success(`You have unfollowed ${followedUsername}!`);
+            fetchCounts();
+        } catch (error) {
+            const errorText = await error.response.data;
+            toast.error(`Failed to unfollow user: ${errorText}`);
         }
     };
 
@@ -382,7 +405,7 @@ export default function ProfilePanel({ onEditProfileClick }) {
                             className="group flex items-baseline hover:text-accent transition-colors focus:outline-none"
                         >
                             <span className="text-lg font-extrabold text-text-primary group-hover:text-accent transition-colors mr-1">
-                                {MOCK_FOLLOWERS_COUNT}
+                                {followerCount}
                             </span>
                             <span className="text-sm text-text-secondary font-medium group-hover:text-accent transition-colors">
                                 Followers
@@ -397,7 +420,7 @@ export default function ProfilePanel({ onEditProfileClick }) {
                             className="group flex items-baseline hover:text-accent transition-colors focus:outline-none"
                         >
                             <span className="text-lg font-extrabold text-text-primary group-hover:text-accent transition-colors mr-1">
-                                {MOCK_FOLLOWING_COUNT}
+                                {followingCount}
                             </span>
                             <span className="text-sm text-text-secondary font-medium group-hover:text-accent transition-colors">
                                 Following
@@ -461,6 +484,7 @@ export default function ProfilePanel({ onEditProfileClick }) {
                 searchResults={searchResults}
                 onSearchChange={handleSearchChange}
                 onFollow={handleFollow}
+                username={profile.username}
             />
         </React.Fragment>
     );
