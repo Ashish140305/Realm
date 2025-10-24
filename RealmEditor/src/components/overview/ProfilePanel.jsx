@@ -284,7 +284,8 @@ export default function ProfilePanel({ onEditProfileClick }) {
         const query = e.target.value;
         setSearchTerm(query);
         if (query.length > 0) {
-            const response = await fetch(`/api/collaboration/users/search?query=${query}`);
+            // FIX: Corrected the API endpoint
+            const response = await fetch(`/api/collaboration/search?query=${query}`);
             if (response.ok) {
                 const users = await response.json();
                 setSearchResults(users.filter(user => user.userId !== profile.username));
